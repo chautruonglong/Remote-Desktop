@@ -2,6 +2,8 @@
 
 # IDE: Intellij IDEA 2020.1.2
 
+# JDK 14
+
 # Knowledge requirement
 
 1. Java swing
