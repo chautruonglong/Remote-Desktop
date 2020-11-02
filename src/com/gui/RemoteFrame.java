@@ -50,7 +50,7 @@ public class RemoteFrame extends JFrame implements Runnable {
                     remoteFrameKeyPressed(e);
                 }
                 catch(RemoteException remoteException) {
-                    remoteException.printStackTrace();
+                    dispose();
                 }
             }
 
@@ -60,7 +60,7 @@ public class RemoteFrame extends JFrame implements Runnable {
                     remoteFrameKeyReleased(e);
                 }
                 catch(RemoteException remoteException) {
-                    remoteException.printStackTrace();
+                    dispose();
                 }
             }
         });
@@ -80,7 +80,7 @@ public class RemoteFrame extends JFrame implements Runnable {
                     screenLabelMousePressed(e);
                 }
                 catch(RemoteException remoteException) {
-                    remoteException.printStackTrace();
+                    dispose();
                 }
             }
 
@@ -90,7 +90,7 @@ public class RemoteFrame extends JFrame implements Runnable {
                     screenLabelMouseReleased(e);
                 }
                 catch(RemoteException remoteException) {
-                    remoteException.printStackTrace();
+                    dispose();
                 }
             }
         });
@@ -99,7 +99,7 @@ public class RemoteFrame extends JFrame implements Runnable {
                 screenLabelMouseWheelMoved(e);
             }
             catch(RemoteException remoteException) {
-                remoteException.printStackTrace();
+                dispose();
             }
         });
         this.screen_label.addMouseMotionListener(new MouseMotionAdapter() {
@@ -109,7 +109,7 @@ public class RemoteFrame extends JFrame implements Runnable {
                     screenLabelMouseMoved(e);
                 }
                 catch(RemoteException remoteException) {
-                    remoteException.printStackTrace();
+                    dispose();
                 }
             }
 
@@ -119,7 +119,7 @@ public class RemoteFrame extends JFrame implements Runnable {
                     screenLabelMouseDragged(e);
                 }
                 catch(RemoteException remoteException) {
-                    remoteException.printStackTrace();
+                    dispose();
                 }
             }
         });
