@@ -2,6 +2,7 @@ package com.gui;
 
 import com.bus.CommonBus;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -90,7 +91,14 @@ public class ClientPanel extends JPanel {
                 this.common_bus.startConnectingToServer(host, port, password);
 
                 // TODO: show remote screen
-                new RemoteFrame(this.common_bus, this.common_bus.getRmiClient().getRemoteObject());
+                EventQueue.invokeLater(() -> {
+                    try {
+                        new RemoteFrame(this.common_bus, this.common_bus.getRmiClient().getRemoteObject());
+                    }
+                    catch(Exception exception) {
+                        JOptionPane.showMessageDialog(this, "Can't connecting to server:\n" + exception.getMessage());
+                    }
+                });
             }
             catch(Exception exception) {
                 JOptionPane.showMessageDialog(this, "Can't connecting to server:\n" + exception.getMessage());
