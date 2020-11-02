@@ -5,7 +5,7 @@ import javax.swing.JOptionPane;
 
 public class Application {
     public static void main(String[] args) {
-        // TODO: point to start program
+        // TODO: point to start new program
         EventQueue.invokeLater(() -> {
             try {
                 new MainFrame();
