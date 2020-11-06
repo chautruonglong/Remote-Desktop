@@ -4,12 +4,15 @@ import com.bus.CommonBus;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -42,7 +45,7 @@ public class MainFrame extends JFrame {
         this.setResizable(false);
         this.setTitle("Remote Desktop Software");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setIconImage(ImageIO.read(new File(".\\images\\window_icon.png")));
+        this.setIconImage(new ImageIcon(".\\images\\window_icon.png").getImage());
         this.setVisible(true);
 
         // TODO: add components

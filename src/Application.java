@@ -11,7 +11,7 @@ public class Application {
                 new MainFrame();
             }
             catch(IOException e) {
-                JOptionPane.showMessageDialog(null, "Application error!");
+                JOptionPane.showMessageDialog(null, "Application error!\n" + e.getMessage());
             }
         });
     }
