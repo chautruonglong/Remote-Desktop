@@ -198,8 +198,7 @@ public class RemoteFrame extends JFrame implements Runnable {
     private void screenLabelMouseMoved(MouseEvent e) throws RemoteException {
         float x = e.getX() * dx;
         float y = e.getY() * dy;
-        int type = this.remote_obj.mouseMovedServer((int) x, (int) y);
-        this.setCursor(new Cursor(type));
+        this.remote_obj.mouseMovedServer((int) x, (int) y);
     }
 
     private void screenLabelMouseDragged(MouseEvent e) throws RemoteException {

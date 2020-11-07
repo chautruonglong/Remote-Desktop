@@ -1,11 +1,13 @@
 package com.bus;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import javax.imageio.ImageIO;
+import javax.swing.plaf.basic.BasicTreeUI;
 
 public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDesktop {
     private Robot mr_robot;
@@ -28,9 +30,8 @@ public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDes
 
     // TODO: mouse
     @Override
-    public int mouseMovedServer(int x, int y) throws RemoteException {
+    public void mouseMovedServer(int x, int y) throws RemoteException {
         this.mr_robot.mouseMove(x, y);
-        return Cursor.getDefaultCursor().getType();
     }
 
     @Override
