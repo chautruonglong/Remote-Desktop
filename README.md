@@ -1,5 +1,9 @@
 # Remote-Desktop
 
+# Group 3
+* Châu Trường Long
+* Nguyễn Thị Minh Châu
+
 # IDE: Intellij IDEA 2020.1.2
 
 # JDK 15
