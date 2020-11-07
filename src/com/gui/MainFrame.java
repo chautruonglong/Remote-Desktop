@@ -4,11 +4,8 @@ import com.bus.CommonBus;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
-import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
@@ -147,11 +144,11 @@ public class MainFrame extends JFrame {
 
         if(isLeft) {
             x_show_location.set(MainFrame.WIDTH_FRAME);
-            value.set(-100);
+            value.set(-50);
         }
         else {
             x_show_location.set(-MainFrame.WIDTH_FRAME);
-            value.set(100);
+            value.set(50);
         }
 
         Timer timer = new Timer(30, (e) -> {
