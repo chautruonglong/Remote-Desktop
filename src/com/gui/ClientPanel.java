@@ -4,7 +4,6 @@ import com.bus.CommonBus;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.Robot;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
@@ -16,6 +15,7 @@ public class ClientPanel extends JPanel {
 
     private CommonPanel main_panel;
     private CommonLabel connect_label;
+    private JLabel loader_label;
 
     private CommonBus common_bus;
 
@@ -37,6 +37,7 @@ public class ClientPanel extends JPanel {
         // TODO: constructor
         this.main_panel = new CommonPanel();
         this.connect_label = new CommonLabel();
+        this.loader_label = new JLabel();
 
         // TODO: style main panel
         this.main_panel.setBorder(BorderFactory.createTitledBorder(null, "Connect To Server",
@@ -70,7 +71,7 @@ public class ClientPanel extends JPanel {
         // TODO: style connect_label
         this.connect_label.setIcon(new ImageIcon(".\\images\\connect_icon.png"));
         this.connect_label.setText("Connect now");
-        this.connect_label.setBounds(240, 250, 120, 100);
+        this.connect_label.setBounds(210, 280, 110, 30);
         this.connect_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
         this.connect_label.setFont(new Font("segoe ui", Font.PLAIN, 13));
         this.connect_label.addMouseListener(new MouseAdapter() {
@@ -80,30 +81,48 @@ public class ClientPanel extends JPanel {
             }
         });
         this.add(this.connect_label);
+
+        // TODO: style loader_label
+        this.loader_label.setIcon(new ImageIcon(".\\images\\loader_icon.gif"));
+        this.loader_label.setBounds(330, 287, 16, 16);
+        this.loader_label.setVisible(false);
+        this.add(this.loader_label);
+    }
+
+    @Override
+    public void setEnabled(boolean b) {
+        this.main_panel.setEnabled(b);
+        this.connect_label.setEnabled(b);
     }
 
     // TODO: handle events of connect_label
     private void connectLabelMousePressed(MouseEvent e) {
         if(e.getButton() == MouseEvent.BUTTON1) {
-            try {
-                String host = this.main_panel.getHostText().getText().trim();
-                int port = Integer.parseInt(this.main_panel.getPortText().getText().trim());
-                String password = this.main_panel.getPassField().getText().trim();
-                this.common_bus.startConnectingToServer(host, port, password);
+            this.setEnabled(false);
+            this.loader_label.setVisible(true);
+            new Thread(() -> {
+                try {
+                    String host = this.main_panel.getHostText().getText().trim();
+                    int port = Integer.parseInt(this.main_panel.getPortText().getText().trim());
+                    String password = this.main_panel.getPassField().getText().trim();
+                    this.common_bus.startConnectingToServer(host, port, password);
 
-                // TODO: show remote screen
-                EventQueue.invokeLater(() -> {
-                    try {
-                        new RemoteFrame(this.common_bus);
-                    }
-                    catch(Exception exception) {
-                        JOptionPane.showMessageDialog(this, "Can't connecting to server:\n" + exception.getMessage());
-                    }
-                });
-            }
-            catch(Exception exception) {
-                JOptionPane.showMessageDialog(this, "Can't connecting to server:\n" + exception.getMessage());
-            }
+                    // TODO: show remote screen
+                    EventQueue.invokeLater(() -> {
+                        try {
+                            new RemoteFrame(this.common_bus);
+                        }
+                        catch(Exception exception) {
+                            JOptionPane.showMessageDialog(this, "Can't connecting to server:\n" + exception.getMessage());
+                        }
+                    });
+                }
+                catch(Exception exception) {
+                    JOptionPane.showMessageDialog(this, "Can't connecting to server:\n" + exception.getMessage());
+                }
+                this.setEnabled(true);
+                this.loader_label.setVisible(false);
+            }).start();
         }
     }
 }

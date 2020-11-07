@@ -97,6 +97,17 @@ public class CommonPanel extends JPanel {
         this.add(this.help_label);
     }
 
+
+
+    @Override
+    public void setEnabled(boolean b) {
+        this.host_combo.setEnabled(b);
+        this.host_text.setEnabled(b);
+        this.pass_field.setEnabled(b);
+        this.pass_text.setEnabled(b);
+        this.port_text.setEnabled(b);
+    }
+
     public JLabel getHostLabel() {
         return host_label;
     }
