@@ -28,8 +28,9 @@ public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDes
 
     // TODO: mouse
     @Override
-    public void mouseMovedServer(int x, int y) throws RemoteException {
+    public int mouseMovedServer(int x, int y) throws RemoteException {
         this.mr_robot.mouseMove(x, y);
+        return Cursor.getDefaultCursor().getType();
     }
 
     @Override

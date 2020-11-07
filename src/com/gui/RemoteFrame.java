@@ -2,9 +2,7 @@ package com.gui;
 
 import com.bus.CommonBus;
 import com.bus.IRemoteDesktop;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -28,7 +26,14 @@ public class RemoteFrame extends JFrame implements Runnable {
     private float dx;
     private float dy;
 
-    public RemoteFrame(CommonBus common_bus, IRemoteDesktop remote_obj) throws Exception {
+    public RemoteFrame(CommonBus common_bus) throws Exception {
+        this.common_bus = common_bus;
+        this.remote_obj = this.common_bus.getRmiClient().getRemoteObject();
+        this.screen_size = Toolkit.getDefaultToolkit().getScreenSize();
+        this.taskbar_inset = Toolkit.getDefaultToolkit().getScreenInsets(this.getGraphicsConfiguration()).bottom;
+
+        this.setTitle("You are remoting " + this.common_bus.getTcpClient().getClient().getLocalAddress().getHostName());
+        this.getContentPane().setBackground(Color.BLACK);
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setLocationRelativeTo(null);
         this.setLayout(null);
@@ -65,11 +70,6 @@ public class RemoteFrame extends JFrame implements Runnable {
             }
         });
         this.setVisible(true);
-
-        this.common_bus = common_bus;
-        this.remote_obj = remote_obj;
-        this.screen_size = Toolkit.getDefaultToolkit().getScreenSize();
-        this.taskbar_inset = Toolkit.getDefaultToolkit().getScreenInsets(this.getGraphicsConfiguration()).bottom;
 
         // TODO: events
         this.screen_label = new JLabel();
@@ -198,7 +198,8 @@ public class RemoteFrame extends JFrame implements Runnable {
     private void screenLabelMouseMoved(MouseEvent e) throws RemoteException {
         float x = e.getX() * dx;
         float y = e.getY() * dy;
-        this.remote_obj.mouseMovedServer((int) x, (int) y);
+        int type = this.remote_obj.mouseMovedServer((int) x, (int) y);
+        this.setCursor(new Cursor(type));
     }
 
     private void screenLabelMouseDragged(MouseEvent e) throws RemoteException {
