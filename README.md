@@ -2,7 +2,7 @@
 
 # IDE: Intellij IDEA 2020.1.2
 
-# JDK 14
+# JDK 15
 
 # Knowledge requirement
 
