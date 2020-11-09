@@ -152,7 +152,7 @@ public class MainFrame extends JFrame {
             value.set(50);
         }
 
-        Timer timer = new Timer(30, (e) -> {
+        Timer timer = new Timer(10, (e) -> {
             hide_panel.setLocation(x_hide_location.get(), MainFrame.HEIGHT_TASKBAR);
             show_panel.setLocation(x_show_location.get(), MainFrame.HEIGHT_TASKBAR);
             if(x_show_location.get() == 0) {
