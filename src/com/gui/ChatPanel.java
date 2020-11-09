@@ -5,6 +5,7 @@ import com.bus.FileMessage;
 import com.bus.Message;
 import com.bus.StringMessage;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.KeyAdapter;
@@ -150,6 +151,14 @@ public class ChatPanel extends JPanel implements Runnable {
         this.file_label.setEnabled(b);
     }
 
+    @Override
+    public void setVisible(boolean b) {
+        // TODO: move scroll to bottom when show up
+        this.scroll_panel.getViewport().setViewPosition(new Point(0, this.scroll_panel.getVerticalScrollBar().getMaximum()));
+        this.scroll_panel.getViewport().setViewPosition(new Point(0, this.scroll_panel.getVerticalScrollBar().getMaximum()));
+        super.setVisible(b);
+    }
+
     private void messageTextKeyPressed(KeyEvent e) {
         if(e.getKeyCode() == KeyEvent.VK_ENTER) {
             this.sendMessage();
@@ -223,17 +232,21 @@ public class ChatPanel extends JPanel implements Runnable {
 
     // TODO: show message in panel
     private void addMessageToPanel(JLabel label, int gap, String color_header) {
-        label.setText(this.handleMessage(label.getText(), color_header));
+        EventQueue.invokeLater(() -> {
+            label.setText(this.handleMessage(label.getText(), color_header));
 
-        this.h_parallel.addGroup(
-            this.layout.createSequentialGroup()
-                .addContainerGap(gap, gap)
-                .addComponent(label)
-        );
-        this.v_sequential.addComponent(label).addGap(10, 10, 10);
-        this.scroll_panel.revalidate();
-        this.scroll_panel.getViewport().setViewPosition(new Point(0, this.scroll_panel.getVerticalScrollBar().getMaximum()));
-        this.scroll_panel.getViewport().setViewPosition(new Point(0, this.scroll_panel.getVerticalScrollBar().getMaximum()));
+            this.h_parallel.addGroup(
+                this.layout.createSequentialGroup()
+                    .addContainerGap(gap, gap)
+                    .addComponent(label)
+            );
+            this.v_sequential.addComponent(label).addGap(10, 10, 10);
+            this.scroll_panel.revalidate();
+
+            // TODO: move scroll to bottom
+            this.scroll_panel.getViewport().setViewPosition(new Point(0, this.scroll_panel.getVerticalScrollBar().getMaximum()));
+            this.scroll_panel.getViewport().setViewPosition(new Point(0, this.scroll_panel.getVerticalScrollBar().getMaximum()));
+        });
     }
 
     // TODO: format message
