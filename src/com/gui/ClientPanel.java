@@ -75,7 +75,7 @@ public class ClientPanel extends JPanel {
         this.main_panel.getHelpLabel().setText("<html>>>Help: Enter a name or an IP address and port of server which you want to remote.<br>>>Example: 192.168.0.1:9999</html>");
 
         // TODO: style connect_label
-        this.connect_label.setIcon(new ImageIcon(".\\images\\connect_icon.png"));
+        this.connect_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("connect_icon.png")));
         this.connect_label.setText("Connect now");
         this.connect_label.setBounds(210, 280, 110, 30);
         this.connect_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
@@ -104,7 +104,7 @@ public class ClientPanel extends JPanel {
         this.add(this.high_radio);
 
         // TODO: style loader_label
-        this.loader_label.setIcon(new ImageIcon(".\\images\\loader_icon.gif"));
+        this.loader_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("loader_icon.gif")));
         this.loader_label.setBounds(330, 287, 16, 16);
         this.loader_label.setVisible(false);
         this.add(this.loader_label);

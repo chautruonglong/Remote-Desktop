@@ -79,7 +79,7 @@ public class ServerPanel extends JPanel {
 
         // TODO: style listen_label
         this.listen_label.setText("Start listening");
-        this.listen_label.setIcon(new ImageIcon(".\\images\\listen_icon.png"));
+        this.listen_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("listen_icon.png")));
         this.listen_label.setBounds(50, 250, 120, 100);
         this.listen_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
         this.listen_label.setFont(new Font("segoe ui", Font.PLAIN, 13));
@@ -93,7 +93,7 @@ public class ServerPanel extends JPanel {
 
         // TODO: style stop_label
         this.stop_label.setText("Stop listening");
-        this.stop_label.setIcon(new ImageIcon(".\\images\\stop_icon.png"));
+        this.stop_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("stop_icon.png")));
         this.stop_label.setBounds(240, 250, 120, 100);
         this.stop_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
         this.stop_label.setFont(new Font("segoe ui", Font.PLAIN, 13));

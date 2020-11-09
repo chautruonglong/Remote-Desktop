@@ -38,6 +38,7 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.taskbar_inset = Toolkit.getDefaultToolkit().getScreenInsets(this.getGraphicsConfiguration()).bottom;
 
         this.setTitle("You are remoting " + this.common_bus.getTcpClient().getClient().getLocalAddress().getHostName());
+        this.setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("window_icon.png")).getImage());
         this.getContentPane().setBackground(Color.BLACK);
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setLocationRelativeTo(null);

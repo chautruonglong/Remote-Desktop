@@ -102,7 +102,7 @@ public class ChatPanel extends JPanel implements Runnable {
 
         // TODO: style send_label
         this.send_label.setText("Send");
-        this.send_label.setIcon(new ImageIcon(".\\images\\send_icon.png"));
+        this.send_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("send_icon.png")));
         this.send_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
         this.send_label.setFont(new Font("segoe ui", Font.PLAIN, 13));
         this.send_label.setBounds(this.scroll_text.getWidth() + 50, this.scroll_text.getY(), 80, 30);
@@ -116,7 +116,7 @@ public class ChatPanel extends JPanel implements Runnable {
 
         // TODO: style file_label
         this.file_label.setText("File");
-        this.file_label.setIcon(new ImageIcon(".\\images\\file_icon.png"));
+        this.file_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("file_icon.png")));
         this.file_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
         this.file_label.setFont(new Font("segoe ui", Font.PLAIN, 13));
         this.file_label.setBounds(this.scroll_text.getWidth() + 50, this.scroll_text.getY() + 40, 60, 30);
@@ -134,7 +134,7 @@ public class ChatPanel extends JPanel implements Runnable {
         this.add(this.file_label);
 
         // TODO: style loader_label
-        this.loader_label.setIcon(new ImageIcon(".\\images\\loader_icon2.gif"));
+        this.loader_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("loader_icon2.gif")));
         this.loader_label.setBounds(this.file_label.getX() + 60, this.file_label.getY() + 7, 16, 16);
         this.loader_label.setVisible(false);
         this.add(this.loader_label);

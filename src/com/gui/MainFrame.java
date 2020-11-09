@@ -43,7 +43,7 @@ public class MainFrame extends JFrame {
         this.setResizable(false);
         this.setTitle("Remote Desktop Software");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setIconImage(new ImageIcon(".\\images\\window_icon.png").getImage());
+        this.setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("window_icon.png")).getImage());
         this.setVisible(true);
 
         // TODO: add components
