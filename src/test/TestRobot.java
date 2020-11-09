@@ -2,9 +2,7 @@ package test;
 
 import java.awt.AWTException;
 import java.awt.Robot;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
 
 public class TestRobot {
     public static void main(String[] args) throws AWTException {

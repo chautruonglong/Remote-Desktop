@@ -2,13 +2,7 @@ package test;
 
 import com.bus.IRemoteDesktop;
 import com.bus.RmiServer;
-import java.awt.AWTException;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 
 public class TestRmiServer {
     public static void main(String[] args) throws Exception {

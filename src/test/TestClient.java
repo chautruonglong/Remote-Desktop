@@ -1,8 +1,8 @@
 package test;
 
 import java.io.IOException;
-import java.net.*;
-import java.util.Collections;
+import java.net.Inet4Address;
+import java.net.NetworkInterface;
 import java.util.Enumeration;
 
 public class TestClient {

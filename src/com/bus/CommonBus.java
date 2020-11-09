@@ -2,7 +2,6 @@ package com.bus;
 
 import java.awt.AWTException;
 import java.io.IOException;
-import java.net.Socket;
 import java.rmi.NotBoundException;
 
 public class CommonBus extends Thread {

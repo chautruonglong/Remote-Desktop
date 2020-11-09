@@ -7,7 +7,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.SocketException;
 import java.util.Vector;
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
@@ -114,6 +117,7 @@ public class ServerPanel extends JPanel {
                 this.common_bus.startListeningOnServer(host, port, password);
 
                 // TODO: set status
+                this.main_panel.setEnabled(false);
                 this.listen_label.resetFont();
                 this.listen_label.setEnabled(false);
                 this.stop_label.setEnabled(true);
@@ -132,6 +136,7 @@ public class ServerPanel extends JPanel {
             try {
                 this.common_bus.stopListeningOnServer();
                 // TODO: set status
+                this.main_panel.setEnabled(true);
                 this.stop_label.resetFont();
                 this.stop_label.setEnabled(false);
                 this.listen_label.setEnabled(true);

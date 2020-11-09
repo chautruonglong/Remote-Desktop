@@ -2,7 +2,6 @@ package com.gui;
 
 import com.bus.CommonBus;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.event.MouseAdapter;
@@ -35,6 +34,7 @@ public class MainFrame extends JFrame {
 
     public MainFrame() throws IOException {
         ImageIO.setUseCache(false); // TODO: not using disk cache
+
         // TODO: style main frame
         this.getContentPane().setPreferredSize(new Dimension(MainFrame.WIDTH_FRAME, MainFrame.HEIGHT_FRAME));
         this.pack();
@@ -114,7 +114,7 @@ public class MainFrame extends JFrame {
         this.add(this.chat_panel);
     }
 
-    private void tabLabelMouseClicked(MouseEvent e, CommonLabel commonLabel, int key) {
+    private void tabLabelMouseClicked(MouseEvent e, CommonLabel common_label, int key) {
         if(e.getButton() == MouseEvent.BUTTON1) {
             if(key == focus_key) return;
             JPanel show_panel = (key == 1) ? this.client_panel : (key == 2) ? this.server_panel : this.chat_panel;
@@ -131,7 +131,7 @@ public class MainFrame extends JFrame {
             this.client_label.setSmallFont();
             this.server_label.setSmallFont();
             this.chat_label.setSmallFont();
-            commonLabel.setBigFont();
+            common_label.setBigFont();
         }
     }
 

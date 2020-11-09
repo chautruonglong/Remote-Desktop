@@ -2,7 +2,10 @@ package com.gui;
 
 import com.bus.CommonBus;
 import com.bus.IRemoteDesktop;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;

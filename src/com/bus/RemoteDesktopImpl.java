@@ -1,13 +1,11 @@
 package com.bus;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import javax.imageio.ImageIO;
-import javax.swing.plaf.basic.BasicTreeUI;
 
 public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDesktop {
     private Robot mr_robot;

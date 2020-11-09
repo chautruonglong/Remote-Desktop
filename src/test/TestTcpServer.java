@@ -1,14 +1,10 @@
 package test;
 
-import com.bus.ChatBus;
-import com.bus.TcpServer;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 
 public class TestTcpServer extends Thread {
     public static void main(String[] args) throws IOException {

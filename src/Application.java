@@ -1,5 +1,4 @@
 import com.gui.MainFrame;
-import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.io.IOException;
 import javax.swing.JOptionPane;
