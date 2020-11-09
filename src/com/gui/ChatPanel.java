@@ -307,7 +307,6 @@ public class ChatPanel extends JPanel implements Runnable {
                         }
                     }
                 }
-                Thread.sleep(100);
             }
             catch(Exception e) {
                 this.setEnabled(false);

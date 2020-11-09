@@ -168,7 +168,6 @@ public class RemoteFrame extends JFrame implements Runnable {
                 ByteArrayInputStream bis = new ByteArrayInputStream(dgram);
                 Image screenshot = ImageIO.read(bis).getScaledInstance(this.screen_label.getWidth(), this.screen_label.getHeight(), Image.SCALE_SMOOTH);
                 this.screen_label.setIcon(new ImageIcon(screenshot));
-                //Thread.sleep(70);
             }
             catch(Exception e) {
                 JOptionPane.showMessageDialog(this, "Your partner can't share screen");
