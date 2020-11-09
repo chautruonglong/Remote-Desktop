@@ -201,7 +201,7 @@ public class RemoteFrame extends JFrame implements Runnable {
 
     private void remoteFrameWindowClosing(WindowEvent e) throws IOException {
         this.client_panel.setEnabled(true);
-        this.common_bus.getRmiClient().setIsRemoteServer(false);
+        this.common_bus.getRmiClient().setRemoteServer(false);
         this.common_bus.getTcpClient().setConnectedServer(false);
         this.common_bus.getTcpClient().getClient().close();
     }
