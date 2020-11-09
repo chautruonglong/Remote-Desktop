@@ -161,7 +161,7 @@ public class RemoteFrame extends JFrame implements Runnable {
         else {
             float ratio = screenshot.getHeight() / screenshot.getHeight(); // TODO: find ratio 16/9 or 4/3 or 16/10, ...
             Dimension new_partner_size = new Dimension(this.screen_size.width, (int) (this.screen_size.width / ratio));
-            int v_gap = (this.screen_size.height = new_partner_size.height) / 2;
+            int v_gap = (this.screen_size.height - new_partner_size.height) / 2;
 
             this.dx = (float) screenshot.getWidth() / new_partner_size.width;
             this.dy = (float) screenshot.getHeight() / new_partner_size.height;
