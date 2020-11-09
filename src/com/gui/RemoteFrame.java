@@ -2,10 +2,7 @@ package com.gui;
 
 import com.bus.CommonBus;
 import com.bus.IRemoteDesktop;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -23,7 +20,8 @@ public class RemoteFrame extends JFrame implements Runnable {
     private IRemoteDesktop remote_obj;
 
     private Dimension screen_size;
-    private int taskbar_inset;
+    private Insets frame_insets;
+    private Insets taskbar_insets;
     private String quality;
 
     // TODO: properties for remote larger screen
@@ -34,8 +32,6 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.quality = quality;
         this.common_bus = common_bus;
         this.remote_obj = this.common_bus.getRmiClient().getRemoteObject();
-        this.screen_size = Toolkit.getDefaultToolkit().getScreenSize();
-        this.taskbar_inset = Toolkit.getDefaultToolkit().getScreenInsets(this.getGraphicsConfiguration()).bottom;
 
         this.setTitle("You are remoting " + this.common_bus.getTcpClient().getClient().getLocalAddress().getHostName());
         this.setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("window_icon.png")).getImage());
@@ -76,6 +72,11 @@ public class RemoteFrame extends JFrame implements Runnable {
             }
         });
         this.setVisible(true);
+
+        this.screen_size = Toolkit.getDefaultToolkit().getScreenSize();
+        System.out.println(this.screen_size);
+        this.frame_insets = this.getInsets();
+        this.taskbar_insets = Toolkit.getDefaultToolkit().getScreenInsets(this.getGraphicsConfiguration());
 
         // TODO: events
         this.screen_label = new JLabel();
@@ -144,29 +145,39 @@ public class RemoteFrame extends JFrame implements Runnable {
         ByteArrayInputStream bis = new ByteArrayInputStream(dgram);
         BufferedImage screenshot = ImageIO.read(bis);
 
+        this.screen_size.width -= (this.taskbar_insets.left + this.taskbar_insets.right + this.frame_insets.left + this.frame_insets.right);
+        this.screen_size.height -= (this.taskbar_insets.top + this.taskbar_insets.bottom + this.frame_insets.top + this.frame_insets.bottom);
+
         // TODO: your screen lager than partner's screen
-        if(this.getWidth() > screenshot.getWidth() && this.getHeight() > screenshot.getHeight()) {
-            int h_gap = (this.getWidth() - screenshot.getWidth()) / 2;
-            int v_gap = (this.getHeight() - screenshot.getHeight()) / 2;
-            this.screen_label.setBounds(h_gap, v_gap, screenshot.getWidth(), screenshot.getHeight());
+        if(this.screen_size.width > screenshot.getWidth() && this.screen_size.height > screenshot.getHeight()) {
+            int h_gap = (this.screen_size.width - screenshot.getWidth()) / 2;
+            int v_gap = (this.screen_size.height - screenshot.getHeight()) / 2;
+
             this.dx = 1;
             this.dy = 1;
+            this.screen_label.setBounds(h_gap, v_gap, screenshot.getWidth(), screenshot.getHeight());
         }
         // TODO: your screen smaller than partner's screen
         else {
-            this.screen_label.setBounds(0, 0, this.screen_size.width, this.screen_size.height - this.taskbar_inset - this.getInsets().top);
-            this.dx = (float) screenshot.getWidth() / this.screen_label.getWidth();
-            this.dy = (float) screenshot.getHeight() / this.screen_label.getHeight();
+            float ratio = screenshot.getHeight() / screenshot.getHeight(); // TODO: find ratio 16/9 or 4/3 or 16/10, ...
+            Dimension new_partner_size = new Dimension(this.screen_size.width, (int) (this.screen_size.width / ratio));
+            int v_gap = (this.screen_size.height = new_partner_size.height) / 2;
+
+            this.dx = (float) screenshot.getWidth() / new_partner_size.width;
+            this.dy = (float) screenshot.getHeight() / new_partner_size.height;
+            this.screen_label.setBounds(0, v_gap, new_partner_size.width, new_partner_size.height);
         }
     }
 
     @Override
     public void run() {
+        int width = this.screen_label.getWidth();
+        int height = this.screen_label.getHeight();
         while(this.common_bus.getTcpClient().isConnectedServer()) {
             try {
                 byte[] dgram = this.remote_obj.takeScreenshotServer(quality);
                 ByteArrayInputStream bis = new ByteArrayInputStream(dgram);
-                Image screenshot = ImageIO.read(bis).getScaledInstance(this.screen_label.getWidth(), this.screen_label.getHeight(), Image.SCALE_SMOOTH);
+                Image screenshot = ImageIO.read(bis).getScaledInstance(width, height, Image.SCALE_SMOOTH);
                 this.screen_label.setIcon(new ImageIcon(screenshot));
             }
             catch(Exception e) {
