@@ -36,4 +36,8 @@ public class RmiClient {
     public boolean isRemoteServer() {
         return this.is_remote_server;
     }
+
+    public void setIsRemoteServer(boolean b) {
+        this.is_remote_server = b;
+    }
 }

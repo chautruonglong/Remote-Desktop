@@ -67,22 +67,15 @@ public class CommonBus extends Thread {
         // TODO: check server is listening?
         if(this.tcp_server.isListening()) throw new Exception("Please, stop listening server first!");
         if(this.tcp_client.isConnectedServer()) throw new Exception("You are remoting!");
-        // TODO: check password of server
         this.tcp_client.startConnectingToTcpServer(host, port, password);
-        if(!this.tcp_client.isConnectedServer()) throw new Exception("Wrong password of server!");
-        else {
-            // TODO: password is true
-            this.rmi_client.startConnectingToRmiServer(host, port + 1);
-        }
+        this.rmi_client.startConnectingToRmiServer(host, port + 1);
     }
 
     @Override
     public void run() {
         while(this.tcp_server.isListening()) {
             try {
-                if(!this.tcp_server.isHasPartner()) {
-                    this.tcp_server.waitingConnectionFromClient();
-                }
+                this.tcp_server.waitingConnectionFromClient();
                 Thread.sleep(1000);
             }
             catch(Exception e) {}

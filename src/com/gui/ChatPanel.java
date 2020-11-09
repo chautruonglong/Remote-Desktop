@@ -306,7 +306,9 @@ public class ChatPanel extends JPanel implements Runnable {
                             this.addMessageToPanel(file_label, 0, "blue");
                         }
                     }
+                    continue; // TODO: pass sleep if connected
                 }
+                Thread.sleep(500); // TODO: update status of client and server
             }
             catch(Exception e) {
                 this.setEnabled(false);

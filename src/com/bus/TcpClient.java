@@ -24,12 +24,19 @@ public class TcpClient extends Thread {
             DataInputStream dis = new DataInputStream(this.client.getInputStream());
 
             dos.writeUTF(password);
-            dos.flush();
             String result = dis.readUTF();
 
             if(result.equals("true")) {
                 this.chat_bus.setSocket(this.client);
                 this.is_connected_server = true;
+            }
+            else if(result.equals("false")) {
+                this.client.close();
+                throw new IOException("Wrong password of server");
+            }
+            else if(result.equals("busy")) {
+                this.client.close();
+                throw new IOException("Server is busy now");
             }
         }
     }

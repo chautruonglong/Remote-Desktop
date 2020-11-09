@@ -135,6 +135,7 @@ public class ServerPanel extends JPanel {
         if(e.getButton() == MouseEvent.BUTTON1 && this.stop_label.isEnabled()) {
             try {
                 this.common_bus.stopListeningOnServer();
+
                 // TODO: set status
                 this.main_panel.setEnabled(true);
                 this.stop_label.resetFont();

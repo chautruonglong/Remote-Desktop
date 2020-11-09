@@ -170,13 +170,24 @@ public class RemoteFrame extends JFrame implements Runnable {
                 this.screen_label.setIcon(new ImageIcon(screenshot));
             }
             catch(Exception e) {
-                JOptionPane.showMessageDialog(this, "Your partner can't share screen");
+                this.dispose();
             }
         }
-        this.dispose();
+    }
+
+    @Override
+    public void dispose() {
+        try {
+            remoteFrameWindowClosing(null);
+        }
+        catch(IOException exception) {
+            JOptionPane.showMessageDialog(null, "Can't close connection");
+        }
+        super.dispose();
     }
 
     private void remoteFrameWindowClosing(WindowEvent e) throws IOException {
+        this.common_bus.getRmiClient().setIsRemoteServer(false);
         this.common_bus.getTcpClient().setConnectedServer(false);
         this.common_bus.getTcpClient().getClient().close();
     }

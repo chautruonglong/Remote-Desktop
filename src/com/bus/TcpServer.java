@@ -38,30 +38,27 @@ public class TcpServer extends Thread {
     public void stopListeningOnTcpServer() throws IOException {
         if(this.is_listening == true) {
             this.server.close();
-            this.chat_bus.setSocket(null);
+            if(this.client != null) this.client.close();
             this.is_listening = false;
             this.is_has_partner = false;
         }
     }
 
     public void waitingConnectionFromClient() throws IOException {
-        if(this.is_listening == true && this.is_has_partner == false) {
-            this.client = this.server.accept();
-            DataOutputStream dos = new DataOutputStream(this.client.getOutputStream());
-            DataInputStream dis = new DataInputStream(this.client.getInputStream());
+        this.client = this.server.accept();
+        DataOutputStream dos = new DataOutputStream(this.client.getOutputStream());
+        DataInputStream dis = new DataInputStream(this.client.getInputStream());
+        String password = dis.readUTF();
+        String result = null;
 
-            String password = dis.readUTF();
-            String result = null;
-            if(this.password.equals(password)) result = "true";
-            else result = "false";
-            dos.writeUTF(result);
-            dos.flush();
-
-            if(result.equals("true")) {
-                this.chat_bus.setSocket(this.client);
-                this.is_has_partner = true;
-            }
+        if(this.is_has_partner == true) result = "busy";
+        else if(this.password.equals(password)) {
+            result = "true";
+            this.chat_bus.setSocket(this.client);
+            this.is_has_partner = true;
         }
+        else result = "false";
+        dos.writeUTF(result);
     }
 
     public Vector<String> getAllIpv4AddressesOnLocal() throws SocketException {

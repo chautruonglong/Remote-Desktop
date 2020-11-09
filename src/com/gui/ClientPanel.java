@@ -153,12 +153,12 @@ public class ClientPanel extends JPanel {
                             }
                         }
                         catch(Exception exception) {
-                            JOptionPane.showMessageDialog(this, "Can't connecting to server:\n" + exception.getMessage());
+                            JOptionPane.showMessageDialog(this, "Can't start remoting to server:\n" + exception.getMessage());
                         }
                     });
                 }
                 catch(Exception exception) {
-                    JOptionPane.showMessageDialog(this, "Can't connecting to server:\n" + exception.getMessage());
+                    JOptionPane.showMessageDialog(this, "Can't connect to server:\n" + exception.getMessage());
                 }
                 this.setEnabled(true);
                 this.loader_label.setVisible(false);
