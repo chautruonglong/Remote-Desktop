@@ -118,6 +118,14 @@ public class ClientPanel extends JPanel {
         this.connect_label.setEnabled(b);
     }
 
+    private boolean isFormatIpv4(String host) {
+        int count = 0;
+        for(int i = 0; i < host.length(); ++i) {
+            if(host.charAt(i) == '.') ++count;
+        }
+        return count == 3;
+    }
+
     // TODO: handle events of connect_label
     private void connectLabelMousePressed(MouseEvent e) {
         if(e.getButton() == MouseEvent.BUTTON1 && this.connect_label.isEnabled()) {
@@ -128,6 +136,10 @@ public class ClientPanel extends JPanel {
                     String host = this.main_panel.getHostText().getText().trim();
                     int port = Integer.parseInt(this.main_panel.getPortText().getText().trim());
                     String password = this.main_panel.getPassField().getText().trim();
+                    // TODO: check format ipv4
+                    if(!this.isFormatIpv4(host)) throw new Exception("Wrong format IPV4");
+
+                    // TODO: start connect
                     this.common_bus.startConnectingToServer(host, port, password);
 
                     // TODO: show remote screen
