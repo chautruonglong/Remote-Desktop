@@ -32,6 +32,8 @@ public class TcpServer extends Thread {
             this.server = new ServerSocket();
             this.server.bind(endpoint);
             this.is_listening = true;
+
+            new Thread(this).start();
         }
     }
 
@@ -51,7 +53,7 @@ public class TcpServer extends Thread {
         String password = dis.readUTF();
         String result = null;
 
-        if(this.is_has_partner == true) result = "busy";
+        if(this.is_has_partner) result = "busy";
         else if(this.password.equals(password)) {
             result = "true";
             this.chat_bus.setSocket(this.client);
@@ -78,6 +80,16 @@ public class TcpServer extends Thread {
             }
         }
         return ipv4_addresses;
+    }
+
+    @Override
+    public void run() {
+        while(this.is_listening) {
+            try {
+                this.waitingConnectionFromClient();
+            }
+            catch(Exception e) {}
+        }
     }
 
     public boolean isListening() {

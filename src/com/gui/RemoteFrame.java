@@ -15,6 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 public class RemoteFrame extends JFrame implements Runnable {
+    private ClientPanel client_panel;
     private JLabel screen_label;
     private CommonBus common_bus;
     private IRemoteDesktop remote_obj;
@@ -28,8 +29,9 @@ public class RemoteFrame extends JFrame implements Runnable {
     private float dx;
     private float dy;
 
-    public RemoteFrame(CommonBus common_bus, String quality) throws Exception {
+    public RemoteFrame(ClientPanel client_panel, CommonBus common_bus, String quality) throws Exception {
         this.quality = quality;
+        this.client_panel = client_panel;
         this.common_bus = common_bus;
         this.remote_obj = this.common_bus.getRmiClient().getRemoteObject();
 
@@ -48,6 +50,11 @@ public class RemoteFrame extends JFrame implements Runnable {
                 catch(Exception exception) {
                     JOptionPane.showMessageDialog(null, "Can't close connection");
                 }
+            }
+
+            @Override
+            public void windowOpened(WindowEvent e) {
+                remoteFrameWindowOpened(e);
             }
         });
         this.addKeyListener(new KeyAdapter() {
@@ -74,7 +81,6 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.setVisible(true);
 
         this.screen_size = Toolkit.getDefaultToolkit().getScreenSize();
-        System.out.println(this.screen_size);
         this.frame_insets = this.getInsets();
         this.taskbar_insets = Toolkit.getDefaultToolkit().getScreenInsets(this.getGraphicsConfiguration());
 
@@ -145,8 +151,8 @@ public class RemoteFrame extends JFrame implements Runnable {
         ByteArrayInputStream bis = new ByteArrayInputStream(dgram);
         BufferedImage screenshot = ImageIO.read(bis);
 
-        this.screen_size.width -= (this.taskbar_insets.left + this.taskbar_insets.right + this.frame_insets.left + this.frame_insets.right);
-        this.screen_size.height -= (this.taskbar_insets.top + this.taskbar_insets.bottom + this.frame_insets.top + this.frame_insets.bottom);
+        this.screen_size.width -= (this.taskbar_insets.left + this.taskbar_insets.right);
+        this.screen_size.height -= (this.taskbar_insets.top + this.taskbar_insets.bottom + this.frame_insets.top);
 
         // TODO: your screen lager than partner's screen
         if(this.screen_size.width > screenshot.getWidth() && this.screen_size.height > screenshot.getHeight()) {
@@ -159,13 +165,9 @@ public class RemoteFrame extends JFrame implements Runnable {
         }
         // TODO: your screen smaller than partner's screen
         else {
-            float ratio = screenshot.getHeight() / screenshot.getHeight(); // TODO: find ratio 16/9 or 4/3 or 16/10, ...
-            Dimension new_partner_size = new Dimension(this.screen_size.width, (int) (this.screen_size.width / ratio));
-            int v_gap = (this.screen_size.height - new_partner_size.height) / 2;
-
-            this.dx = (float) screenshot.getWidth() / new_partner_size.width;
-            this.dy = (float) screenshot.getHeight() / new_partner_size.height;
-            this.screen_label.setBounds(0, v_gap, new_partner_size.width, new_partner_size.height);
+            this.dx = (float) screenshot.getWidth() / this.screen_size.width;
+            this.dy = (float) screenshot.getHeight() / this.screen_size.height;
+            this.screen_label.setBounds(0, 0, this.screen_size.width, this.screen_size.height);
         }
     }
 
@@ -198,11 +200,15 @@ public class RemoteFrame extends JFrame implements Runnable {
     }
 
     private void remoteFrameWindowClosing(WindowEvent e) throws IOException {
+        this.client_panel.setEnabled(true);
         this.common_bus.getRmiClient().setIsRemoteServer(false);
         this.common_bus.getTcpClient().setConnectedServer(false);
         this.common_bus.getTcpClient().getClient().close();
     }
 
+    private void remoteFrameWindowOpened(WindowEvent e) {
+        this.client_panel.setEnabled(false);
+    }
 
     // TODO: remote keyboard of server
     private void remoteFrameKeyPressed(KeyEvent e) throws RemoteException {

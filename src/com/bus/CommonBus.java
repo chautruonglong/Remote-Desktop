@@ -4,7 +4,7 @@ import java.awt.AWTException;
 import java.io.IOException;
 import java.rmi.NotBoundException;
 
-public class CommonBus extends Thread {
+public class CommonBus {
     // TODO: for chat
     private ChatBus chat_bus;
 
@@ -51,7 +51,6 @@ public class CommonBus extends Thread {
             // Port rmi = port tcp + 1
             this.tcp_server.startListeningOnTcpServer(host, port, password);
             this.rmi_server.startBindingOnRmiServer(host, port + 1);
-            new Thread(this).start();
         }
     }
 
@@ -69,16 +68,5 @@ public class CommonBus extends Thread {
         if(this.tcp_client.isConnectedServer()) throw new Exception("You are remoting!");
         this.tcp_client.startConnectingToTcpServer(host, port, password);
         this.rmi_client.startConnectingToRmiServer(host, port + 1);
-    }
-
-    @Override
-    public void run() {
-        while(this.tcp_server.isListening()) {
-            try {
-                this.tcp_server.waitingConnectionFromClient();
-                Thread.sleep(1000);
-            }
-            catch(Exception e) {}
-        }
     }
 }

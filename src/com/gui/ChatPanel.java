@@ -314,7 +314,6 @@ public class ChatPanel extends JPanel implements Runnable {
                 this.setEnabled(false);
                 this.common_bus.getTcpServer().setHasPartner(false);
                 this.common_bus.getTcpClient().setConnectedServer(false);
-                JOptionPane.showMessageDialog(this, "Your partner was closed");
             }
         }
     }
