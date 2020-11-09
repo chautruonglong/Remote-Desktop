@@ -213,7 +213,7 @@ public class ChatPanel extends JPanel implements Runnable {
                         this.common_bus.getChatBus().sendMessage(file_message);
 
                         int gap = this.scroll_panel.getWidth() - 180;
-                        file_message.setSender("You send a file:");
+                        file_message.setSender("You");
                         FileLabel file_label = new FileLabel(file_message);
                         this.addMessageToPanel(file_label, gap, "green");
 
