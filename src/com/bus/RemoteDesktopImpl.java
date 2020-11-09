@@ -18,13 +18,13 @@ public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDes
     }
 
     @Override
-    public byte[] takeScreenshotServer() throws Exception {
+    public byte[] takeScreenshotServer(String quality) throws Exception {
         Dimension screen_size = Toolkit.getDefaultToolkit().getScreenSize();
         Rectangle bounds = new Rectangle(screen_size);
         BufferedImage screenshot = this.mr_robot.createScreenCapture(bounds);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ImageIO.setUseCache(false); // TODO: not using disk cache (using ram)
-        ImageIO.write(screenshot, "jpg", bos);
+        ImageIO.write(screenshot, quality, bos);
         return bos.toByteArray();
     }
 

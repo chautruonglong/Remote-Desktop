@@ -15,6 +15,9 @@ public class ClientPanel extends JPanel {
 
     private CommonPanel main_panel;
     private CommonLabel connect_label;
+    private ButtonGroup button_group;
+    private JRadioButton low_radio;
+    private JRadioButton high_radio;
     private JLabel loader_label;
 
     private CommonBus common_bus;
@@ -37,6 +40,9 @@ public class ClientPanel extends JPanel {
         // TODO: constructor
         this.main_panel = new CommonPanel();
         this.connect_label = new CommonLabel();
+        this.button_group = new ButtonGroup();
+        this.low_radio = new JRadioButton();
+        this.high_radio = new JRadioButton();
         this.loader_label = new JLabel();
 
         // TODO: style main panel
@@ -82,6 +88,21 @@ public class ClientPanel extends JPanel {
         });
         this.add(this.connect_label);
 
+        // TODO: style low_radio
+        this.low_radio.setText("Low quality");
+        this.low_radio.setBounds(60, 260, 100, 30);
+        this.low_radio.setOpaque(false);
+        this.low_radio.setSelected(true);
+        this.button_group.add(this.low_radio);
+        this.add(this.low_radio);
+
+        // TODO: style high_radio
+        this.high_radio.setText("High quality");
+        this.high_radio.setBounds(60, 280, 100, 30);
+        this.high_radio.setOpaque(false);
+        this.button_group.add(this.high_radio);
+        this.add(this.high_radio);
+
         // TODO: style loader_label
         this.loader_label.setIcon(new ImageIcon(".\\images\\loader_icon.gif"));
         this.loader_label.setBounds(330, 287, 16, 16);
@@ -92,12 +113,14 @@ public class ClientPanel extends JPanel {
     @Override
     public void setEnabled(boolean b) {
         this.main_panel.setEnabled(b);
+        this.low_radio.setEnabled(b);
+        this.high_radio.setEnabled(b);
         this.connect_label.setEnabled(b);
     }
 
     // TODO: handle events of connect_label
     private void connectLabelMousePressed(MouseEvent e) {
-        if(e.getButton() == MouseEvent.BUTTON1) {
+        if(e.getButton() == MouseEvent.BUTTON1 && this.connect_label.isEnabled()) {
             this.setEnabled(false);
             this.loader_label.setVisible(true);
             new Thread(() -> {
@@ -110,7 +133,12 @@ public class ClientPanel extends JPanel {
                     // TODO: show remote screen
                     EventQueue.invokeLater(() -> {
                         try {
-                            new RemoteFrame(this.common_bus);
+                            if(this.low_radio.isSelected()) {
+                                new RemoteFrame(this.common_bus, "jpg");
+                            }
+                            else if(this.high_radio.isSelected()) {
+                                new RemoteFrame(this.common_bus, "png");
+                            }
                         }
                         catch(Exception exception) {
                             JOptionPane.showMessageDialog(this, "Can't connecting to server:\n" + exception.getMessage());

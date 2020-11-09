@@ -46,7 +46,7 @@ public class TestRmiClient extends JFrame implements Runnable {
     public void run() {
         while(true) {
             try {
-                byte[] dgram = p.takeScreenshotServer();
+                byte[] dgram = p.takeScreenshotServer("jpg");
                 ByteArrayInputStream bis = new ByteArrayInputStream(dgram);
                 BufferedImage bufferedImage = ImageIO.read(bis);
                 label.setIcon(new ImageIcon(bufferedImage));

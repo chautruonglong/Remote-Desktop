@@ -21,12 +21,14 @@ public class RemoteFrame extends JFrame implements Runnable {
 
     private Dimension screen_size;
     private int taskbar_inset;
+    private String quality;
 
     // TODO: properties for remote larger screen
     private float dx;
     private float dy;
 
-    public RemoteFrame(CommonBus common_bus) throws Exception {
+    public RemoteFrame(CommonBus common_bus, String quality) throws Exception {
+        this.quality = quality;
         this.common_bus = common_bus;
         this.remote_obj = this.common_bus.getRmiClient().getRemoteObject();
         this.screen_size = Toolkit.getDefaultToolkit().getScreenSize();
@@ -134,7 +136,7 @@ public class RemoteFrame extends JFrame implements Runnable {
 
     private void setupWindow() throws Exception {
         ImageIO.setUseCache(false);
-        byte[] dgram = this.remote_obj.takeScreenshotServer();
+        byte[] dgram = this.remote_obj.takeScreenshotServer(quality);
         ByteArrayInputStream bis = new ByteArrayInputStream(dgram);
         BufferedImage screenshot = ImageIO.read(bis);
 
@@ -158,7 +160,7 @@ public class RemoteFrame extends JFrame implements Runnable {
     public void run() {
         while(this.common_bus.getTcpClient().isConnectedServer()) {
             try {
-                byte[] dgram = this.remote_obj.takeScreenshotServer();
+                byte[] dgram = this.remote_obj.takeScreenshotServer(quality);
                 ByteArrayInputStream bis = new ByteArrayInputStream(dgram);
                 Image screenshot = ImageIO.read(bis).getScaledInstance(this.screen_label.getWidth(), this.screen_label.getHeight(), Image.SCALE_SMOOTH);
                 this.screen_label.setIcon(new ImageIcon(screenshot));

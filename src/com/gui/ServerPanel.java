@@ -106,7 +106,7 @@ public class ServerPanel extends JPanel {
 
     // TODO: handle events of listen_label
     private void listenLabelMousePressed(MouseEvent e) {
-        if(e.getButton() == MouseEvent.BUTTON1) {
+        if(e.getButton() == MouseEvent.BUTTON1 && this.listen_label.isEnabled()) {
             try {
                 String host = this.main_panel.getHostCombo().getSelectedItem().toString().trim();
                 int port = Integer.parseInt(this.main_panel.getPortText().getText().trim());
@@ -128,7 +128,7 @@ public class ServerPanel extends JPanel {
 
     // TODO: handle events of stop_label
     private void stopLabelMousePressed(MouseEvent e) {
-        if(e.getButton() == MouseEvent.BUTTON1) {
+        if(e.getButton() == MouseEvent.BUTTON1 && this.stop_label.isEnabled()) {
             try {
                 this.common_bus.stopListeningOnServer();
                 // TODO: set status

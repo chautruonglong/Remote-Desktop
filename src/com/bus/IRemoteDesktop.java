@@ -5,7 +5,7 @@ import java.rmi.RemoteException;
 
 public interface IRemoteDesktop extends Remote {
     // TODO: for capture screen to share
-    byte[] takeScreenshotServer() throws Exception;
+    byte[] takeScreenshotServer(String quality) throws Exception;
 
     // TODO: for remote mouse
     void mouseMovedServer(int x, int y) throws RemoteException; // return type of cursor

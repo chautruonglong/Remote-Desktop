@@ -1,6 +1,7 @@
 package com.gui;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -45,6 +46,7 @@ public class CommonLabel extends JLabel {
 
     private void tabLabelMouseEntered(MouseEvent e) {
         if(this.isEnabled()) {
+            this.setCursor(new Cursor(Cursor.HAND_CURSOR));
             int font_size = this.getFont().getSize();
             this.setFont(new Font("segoe ui", Font.BOLD, font_size));
         }
@@ -52,6 +54,7 @@ public class CommonLabel extends JLabel {
 
     private void tabLabelMouseExited(MouseEvent e) {
         if(this.isEnabled()) {
+            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             int font_size = this.getFont().getSize();
             this.setFont(new Font("segoe ui", Font.PLAIN, font_size));
         }

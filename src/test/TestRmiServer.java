@@ -18,7 +18,7 @@ public class TestRmiServer {
         System.out.println(rmiServer.isBinding());
 
         IRemoteDesktop remote_obj = (IRemoteDesktop)Naming.lookup("rmi://0.0.0.0:9999/RemoteDesktop");
-        System.out.println(remote_obj.takeScreenshotServer().length);
+        System.out.println(remote_obj.takeScreenshotServer("jpg").length);
 
         rmiServer.stopBindingOnRmiServer();
 

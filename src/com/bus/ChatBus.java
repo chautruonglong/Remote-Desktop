@@ -1,8 +1,10 @@
 package com.bus;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 
 public class ChatBus {
@@ -16,20 +18,19 @@ public class ChatBus {
         this.socket = socket;
     }
 
-    public void sendMessage(String message) throws IOException {
+    public void sendMessage(Message obj_message) throws IOException {
         if(this.socket != null && !this.socket.isClosed()) {
-            DataOutputStream dos = new DataOutputStream(this.socket.getOutputStream());
-            message = this.socket.getLocalAddress().getHostName() + ":" + message;
-            dos.writeUTF(message);
+            ObjectOutputStream dos = new ObjectOutputStream(this.socket.getOutputStream());
+            dos.writeObject(obj_message);
         }
     }
 
-    public String recvMessage() throws IOException {
-        String message = null;
+    public Message recvMessage() throws IOException, ClassNotFoundException {
+        Message obj_message = null;
         if(this.socket != null && !this.socket.isClosed()) {
-            DataInputStream dis = new DataInputStream(this.socket.getInputStream());
-            message = dis.readUTF();
+            ObjectInputStream dis = new ObjectInputStream(this.socket.getInputStream());
+            obj_message = (Message) dis.readObject();
         }
-        return message;
+        return obj_message;
     }
 }
