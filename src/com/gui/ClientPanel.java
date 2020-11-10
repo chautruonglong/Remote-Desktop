@@ -123,7 +123,9 @@ public class ClientPanel extends JPanel {
         for(int i = 0; i < host.length(); ++i) {
             if(host.charAt(i) == '.') ++count;
         }
-        return count == 3;
+        // TODO: count = 3 for ipv4
+        // TODO: count = 0 for host name
+        return count == 3 || count == 0;
     }
 
     // TODO: handle events of connect_label
