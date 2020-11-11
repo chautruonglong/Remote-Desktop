@@ -1,6 +1,7 @@
 package test;
 
 import com.gui.ComputerInfo;
+import com.gui.DriveInfo;
 import com.gui.DrivesInfoPanel;
 import com.gui.HardwareDialog;
 import java.awt.Color;
@@ -8,6 +9,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
+import javax.swing.filechooser.FileSystemView;
 
 public class TestDrivesInfo extends JFrame {
     public TestDrivesInfo() {
@@ -17,7 +19,10 @@ public class TestDrivesInfo extends JFrame {
         this.setLayout(null);
         this.setVisible(true);
 
-        ComputerInfo pc_info = new ComputerInfo("Window 10", File.listRoots());
+        ComputerInfo pc_info = new ComputerInfo("Window 10");
+        for(File file : File.listRoots()) {
+            pc_info.getDrives().add(new DriveInfo(FileSystemView.getFileSystemView().getSystemDisplayName(file), file.getFreeSpace(), file.getTotalSpace()));
+        }
         DrivesInfoPanel drivesInfoPanel = new DrivesInfoPanel(pc_info);
 
 
