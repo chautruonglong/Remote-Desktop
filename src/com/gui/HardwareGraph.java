@@ -29,6 +29,8 @@ public class HardwareGraph extends JPanel {
     }
 
     public void addValue(double value) {
+        if(value < 0) value = 0;
+        if(value > 1) value = 1;
         int fixed_value = (int) Math.ceil(value * this.bounds.height);
         this.values.add(fixed_value);
         this.repaint();

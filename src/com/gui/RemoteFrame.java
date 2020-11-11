@@ -99,7 +99,10 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.screen_label = new JLabel();
         this.menu_bar = new JMenuBar();
         this.menu_monitor = new JMenu();
-        this.hardware_dialog = new HardwareDialog(this, this.remote_obj);
+        this.hardware_dialog = new HardwareDialog(null, this.remote_obj);
+
+        // TODO: set minimum size of remote frame
+        this.setMinimumSize(this.hardware_dialog.getPreferredSize());
 
         // TODO: style screen_label
         this.screen_label.addMouseListener(new MouseAdapter() {
