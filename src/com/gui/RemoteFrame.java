@@ -160,14 +160,27 @@ public class RemoteFrame extends JFrame implements Runnable {
 
         // TODO: style menu_bar
         this.menu_bar.setLayout(new GridBagLayout());
+        this.menu_bar.setBackground(Color.decode("0x9A9A9A"));
+        this.menu_bar.setPreferredSize(new Dimension(0, 25));
         this.setJMenuBar(this.menu_bar);
 
         // TODO: style menu
-        this.menu_monitor.setText("Monitor");
+        this.menu_monitor.setText("Show monitor");
+        this.menu_bar.setFont(new Font("segoe ui", Font.PLAIN, 14));
         this.menu_monitor.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 menuMonitorMousePressed(e);
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                menuMonitorMouseEntered(e);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                menuMonitorMouseExited(e);
             }
         });
         this.menu_bar.add(menu_monitor);
@@ -222,6 +235,7 @@ public class RemoteFrame extends JFrame implements Runnable {
                 this.dispose();
             }
         }
+        this.dispose();
     }
 
     @Override
@@ -286,5 +300,15 @@ public class RemoteFrame extends JFrame implements Runnable {
         if(e.getButton() == MouseEvent.BUTTON1) {
             this.hardware_dialog.setVisible(true);
         }
+    }
+
+    private void menuMonitorMouseEntered(MouseEvent e) {
+        this.menu_monitor.setFont(new Font("segoe ui", Font.BOLD, 16));
+        this.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    private void menuMonitorMouseExited(MouseEvent e) {
+        this.menu_monitor.setFont(new Font("segoe ui", Font.PLAIN, 14));
+        this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 }
