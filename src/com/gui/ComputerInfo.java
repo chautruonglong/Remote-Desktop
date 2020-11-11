@@ -1,22 +1,22 @@
 package com.gui;
 
-import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class ComputerInfo implements Serializable {
     private String os_name;
-    private File[] disks;
+    private ArrayList<DriveInfo> drives;
 
-    public ComputerInfo(String os_name, File[] disks) {
+    public ComputerInfo(String os_name) {
         this.os_name = os_name;
-        this.disks = disks;
+        this.drives = new ArrayList<>();
     }
 
     public String getOsName() {
         return this.os_name;
     }
 
-    public File[] getDisks() {
-        return this.disks;
+    public ArrayList<DriveInfo> getDrives() {
+        return this.drives;
     }
 }

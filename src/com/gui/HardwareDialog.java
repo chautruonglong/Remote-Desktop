@@ -68,7 +68,9 @@ public class HardwareDialog extends JDialog implements Runnable {
                 this.ram_graphics.addValue(this.remote_obj.getRamUsageServer());
                 Thread.sleep(500);
             }
-            catch(Exception e){}
+            catch(Exception e){
+                this.dispose();
+            }
         }
     }
 

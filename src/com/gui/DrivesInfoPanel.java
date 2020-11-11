@@ -11,7 +11,6 @@ import javax.swing.JProgressBar;
 import javax.swing.filechooser.FileSystemView;
 
 public class DrivesInfoPanel extends JPanel {
-    public final static int GB = 1024 * 1024 * 1024;
     public final static String FOREGROUND = "0x26A0DA";
 
     private ComputerInfo pc_info;
@@ -48,15 +47,14 @@ public class DrivesInfoPanel extends JPanel {
 
         // TODO: style drives
         int y = os_name_label.getY() + os_name_label.getHeight() + 10;
-        for(File file : this.pc_info.getDisks()) {
-            int total_space = (int) (file.getTotalSpace() / DrivesInfoPanel.GB);
-            int usage_space = (int) ((file.getTotalSpace() - file.getFreeSpace()) / DrivesInfoPanel.GB);
+        for(DriveInfo drive : this.pc_info.getDrives()) {
+            int total_space = drive.getTotalSpace();
+            int usage_space = drive.getTotalSpace() - drive.getFreeSpace();
 
             // TODO: add name
-            String drive_name = FileSystemView.getFileSystemView().getSystemDisplayName(file);
             String text =
                 "<html>" +
-                    "<font color=\"blue\">" + drive_name + "<br></font>" +
+                    "<font color=\"blue\">" + drive.getName() + "<br></font>" +
                     " (Used " + usage_space + " GB of " + total_space + " GB)" +
                 "</html>";
             JLabel drive_label = new JLabel(text);

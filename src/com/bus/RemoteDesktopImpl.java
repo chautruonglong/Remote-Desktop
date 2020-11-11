@@ -1,6 +1,7 @@
 package com.bus;
 
 import com.gui.ComputerInfo;
+import com.gui.DriveInfo;
 import com.sun.management.OperatingSystemMXBean;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -10,6 +11,7 @@ import java.lang.management.ManagementFactory;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import javax.imageio.ImageIO;
+import javax.swing.filechooser.FileSystemView;
 
 public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDesktop {
     private Robot mr_robot;
@@ -79,6 +81,10 @@ public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDes
 
     @Override
     public ComputerInfo getComputerInformation() throws RemoteException {
-        return new ComputerInfo(this.os.getName(), File.listRoots());
+        ComputerInfo pc_info = new ComputerInfo(this.os.getName());
+        for(File file : File.listRoots()) {
+            pc_info.getDrives().add(new DriveInfo(FileSystemView.getFileSystemView().getSystemDisplayName(file), file.getFreeSpace(), file.getTotalSpace()));
+        }
+        return pc_info;
     }
 }

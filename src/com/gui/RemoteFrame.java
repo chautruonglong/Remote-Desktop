@@ -44,6 +44,7 @@ public class RemoteFrame extends JFrame implements Runnable {
                     remoteFrameWindowClosing(e);
                 }
                 catch(Exception exception) {
+                    dispose();
                     JOptionPane.showMessageDialog(null, "Can't close connection");
                 }
             }
@@ -99,7 +100,7 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.screen_label = new JLabel();
         this.menu_bar = new JMenuBar();
         this.menu_monitor = new JMenu();
-        this.hardware_dialog = new HardwareDialog(null, this.remote_obj);
+        this.hardware_dialog = new HardwareDialog(this, this.remote_obj);
 
         // TODO: set minimum size of remote frame
         this.setMinimumSize(this.hardware_dialog.getPreferredSize());
@@ -181,7 +182,7 @@ public class RemoteFrame extends JFrame implements Runnable {
         BufferedImage screenshot = ImageIO.read(bis);
 
         this.screen_size.width -= (this.taskbar_insets.left + this.taskbar_insets.right);
-        this.screen_size.height -= (this.taskbar_insets.top + this.taskbar_insets.bottom + this.frame_insets.top + this.menu_bar.getSize().height);
+        this.screen_size.height -= (this.taskbar_insets.top + this.taskbar_insets.bottom + this.frame_insets.top + this.menu_bar.getPreferredSize().height);
 
         // TODO: your screen lager than partner's screen
         if(this.screen_size.width > screenshot.getWidth() && this.screen_size.height > screenshot.getHeight()) {
@@ -194,9 +195,15 @@ public class RemoteFrame extends JFrame implements Runnable {
         }
         // TODO: your screen smaller than partner's screen
         else {
+            float ratio = (float) screenshot.getWidth() / screenshot.getHeight();
+            int tmp_width = this.screen_size.width;
+            this.screen_size.width = (int) (ratio * this.screen_size.height);
+
+            int h_gap = (tmp_width - this.screen_size.width) / 2;
+
             this.dx = (float) screenshot.getWidth() / this.screen_size.width;
             this.dy = (float) screenshot.getHeight() / this.screen_size.height;
-            this.screen_label.setBounds(0, 0, this.screen_size.width, this.screen_size.height);
+            this.screen_label.setBounds(h_gap, 0, this.screen_size.width, this.screen_size.height);
         }
     }
 
@@ -219,16 +226,17 @@ public class RemoteFrame extends JFrame implements Runnable {
 
     @Override
     public void dispose() {
+        super.dispose();
         try {
             remoteFrameWindowClosing(null);
         }
         catch(IOException exception) {
             JOptionPane.showMessageDialog(null, "Can't close connection");
         }
-        super.dispose();
     }
 
     private void remoteFrameWindowClosing(WindowEvent e) throws IOException {
+        this.hardware_dialog.dispose();
         this.client_panel.setEnabled(true);
         this.common_bus.getRmiClient().setRemoteServer(false);
         this.common_bus.getTcpClient().setConnectedServer(false);
