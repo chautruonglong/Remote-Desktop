@@ -9,16 +9,17 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 public class RemoteFrame extends JFrame implements Runnable {
     private ClientPanel client_panel;
-    private JLabel screen_label;
     private CommonBus common_bus;
     private IRemoteDesktop remote_obj;
+
+    private JLabel screen_label;
+    private JMenuBar menu_bar;
+    private JMenu menu_monitor;
+    private HardwareDialog hardware_dialog;
 
     private Dimension screen_size;
     private Insets frame_insets;
@@ -30,12 +31,7 @@ public class RemoteFrame extends JFrame implements Runnable {
     private float dy;
 
     public RemoteFrame(ClientPanel client_panel, CommonBus common_bus, String quality) throws Exception {
-        this.quality = quality;
-        this.client_panel = client_panel;
-        this.common_bus = common_bus;
-        this.remote_obj = this.common_bus.getRmiClient().getRemoteObject();
-
-        this.setTitle("You are remoting " + this.common_bus.getTcpClient().getClient().getLocalAddress().getHostName());
+        this.setTitle("You are remoting " + common_bus.getTcpClient().getClient().getLocalAddress().getHostName());
         this.setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("window_icon.png")).getImage());
         this.getContentPane().setBackground(Color.BLACK);
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -80,12 +76,32 @@ public class RemoteFrame extends JFrame implements Runnable {
         });
         this.setVisible(true);
 
+        this.quality = quality;
+        this.client_panel = client_panel;
+        this.common_bus = common_bus;
+        this.remote_obj = this.common_bus.getRmiClient().getRemoteObject();
         this.screen_size = Toolkit.getDefaultToolkit().getScreenSize();
         this.frame_insets = this.getInsets();
         this.taskbar_insets = Toolkit.getDefaultToolkit().getScreenInsets(this.getGraphicsConfiguration());
 
-        // TODO: events
+        // TODO: add components
+        this.initComponents();
+
+        // TODO: setup window
+        this.setupWindow();
+
+        // TODO: start thread to share partner's screen
+        new Thread(this).start();
+    }
+
+    private void initComponents() throws RemoteException {
+        // TODO: constructor
         this.screen_label = new JLabel();
+        this.menu_bar = new JMenuBar();
+        this.menu_monitor = new JMenu();
+        this.hardware_dialog = new HardwareDialog(this, this.remote_obj);
+
+        // TODO: style screen_label
         this.screen_label.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -138,11 +154,21 @@ public class RemoteFrame extends JFrame implements Runnable {
         });
         this.add(this.screen_label);
 
-        // TODO: setup window
-        this.setupWindow();
+        // TODO: style menu_bar
+        this.menu_bar.setLayout(new GridBagLayout());
+        this.setJMenuBar(this.menu_bar);
 
-        // TODO: start thread to share partner's screen
-        new Thread(this).start();
+        // TODO: style menu
+        this.menu_monitor.setText("Monitor");
+        this.menu_monitor.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                menuMonitorMousePressed(e);
+            }
+        });
+        this.menu_bar.add(menu_monitor);
+
+        // TODO: style hardware_dialog
     }
 
     private void setupWindow() throws Exception {
@@ -152,7 +178,7 @@ public class RemoteFrame extends JFrame implements Runnable {
         BufferedImage screenshot = ImageIO.read(bis);
 
         this.screen_size.width -= (this.taskbar_insets.left + this.taskbar_insets.right);
-        this.screen_size.height -= (this.taskbar_insets.top + this.taskbar_insets.bottom + this.frame_insets.top);
+        this.screen_size.height -= (this.taskbar_insets.top + this.taskbar_insets.bottom + this.frame_insets.top + this.menu_bar.getSize().height);
 
         // TODO: your screen lager than partner's screen
         if(this.screen_size.width > screenshot.getWidth() && this.screen_size.height > screenshot.getHeight()) {
@@ -242,5 +268,12 @@ public class RemoteFrame extends JFrame implements Runnable {
 
     private void screenLabelMouseWheelMoved(MouseWheelEvent e) throws RemoteException {
         this.remote_obj.mouseWheelServer(e.getWheelRotation());
+    }
+
+    // TODO: get hardware info of server
+    private void menuMonitorMousePressed(MouseEvent e) {
+        if(e.getButton() == MouseEvent.BUTTON1) {
+            this.hardware_dialog.setVisible(true);
+        }
     }
 }
