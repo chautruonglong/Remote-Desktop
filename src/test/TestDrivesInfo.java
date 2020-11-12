@@ -23,7 +23,7 @@ public class TestDrivesInfo extends JFrame {
         for(File file : File.listRoots()) {
             pc_info.getDrives().add(new DriveInfo(FileSystemView.getFileSystemView().getSystemDisplayName(file), file.getFreeSpace(), file.getTotalSpace()));
         }
-        DrivesInfoPanel drivesInfoPanel = new DrivesInfoPanel(pc_info);
+        DrivesInfoPanel drivesInfoPanel = new DrivesInfoPanel();
 
 
         JScrollPane scrollPane = new JScrollPane();

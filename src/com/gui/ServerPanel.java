@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
-public class ServerPanel extends JPanel {
+public class ServerPanel extends JPanel implements Runnable {
     public final static String STOPPED_FOREGROUND = "0xF50016";
     public final static String LISTENING_FOREGROUND = "0x8BDDFB";
 
@@ -24,6 +24,8 @@ public class ServerPanel extends JPanel {
     private CommonLabel stop_label;
 
     private CommonBus common_bus;
+
+    private Thread listen_thread;
 
     public ServerPanel(CommonBus common_bus) throws SocketException {
         // TODO: style ClientPanel
@@ -116,6 +118,11 @@ public class ServerPanel extends JPanel {
                 String password = this.main_panel.getPassText().getText().trim();
                 this.common_bus.startListeningOnServer(host, port, password);
 
+                // TODO: start listen_thread
+                this.listen_thread = new Thread(this);
+                this.listen_thread.setDaemon(true);
+                this.listen_thread.start();
+
                 // TODO: set status
                 this.main_panel.setEnabled(false);
                 this.listen_label.resetFont();
@@ -136,6 +143,9 @@ public class ServerPanel extends JPanel {
             try {
                 this.common_bus.stopListeningOnServer();
 
+                // TODO: stop listen_thread
+                this.listen_thread.stop();
+
                 // TODO: set status
                 this.main_panel.setEnabled(true);
                 this.stop_label.resetFont();
@@ -148,6 +158,16 @@ public class ServerPanel extends JPanel {
                 System.out.println(exception.getMessage());
                 JOptionPane.showMessageDialog(this, "Can't stop listening on server:\n" + exception.getMessage());
             }
+        }
+    }
+
+    @Override
+    public void run() {
+        while(this.common_bus.getTcpServer().isListening()) {
+            try {
+                this.common_bus.getTcpServer().waitingConnectionFromClient();
+            }
+            catch(Exception e) {}
         }
     }
 }

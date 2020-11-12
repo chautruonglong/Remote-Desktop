@@ -37,6 +37,8 @@ public class ChatPanel extends JPanel implements Runnable {
 
     private CommonBus common_bus;
 
+    private Thread recv_thread;
+
     public ChatPanel(CommonBus common_bus) {
         // TODO: style ClientPanel
         this.setLocation(0, MainFrame.HEIGHT_TASKBAR);
@@ -52,6 +54,11 @@ public class ChatPanel extends JPanel implements Runnable {
 
         // TODO: Disable chat
         this.setEnabled(false);
+
+        // TODO: start recv_thread
+        this.recv_thread = new Thread(this);
+        this.recv_thread.setDaemon(true);
+        this.recv_thread.start();
     }
 
     private void initComponents() {
@@ -139,9 +146,6 @@ public class ChatPanel extends JPanel implements Runnable {
         this.loader_label.setBounds(this.file_label.getX() + 60, this.file_label.getY() + 7, 16, 16);
         this.loader_label.setVisible(false);
         this.add(this.loader_label);
-
-        // TODO: run thread recv messages
-        new Thread(this).start();
     }
 
     @Override
@@ -205,7 +209,7 @@ public class ChatPanel extends JPanel implements Runnable {
 
                 this.loader_label.setVisible(true);
                 this.setEnabled(false);
-                new Thread(() -> {
+                Thread send_thread = new Thread(() -> {
                     try {
                         // TODO: send file in new thread
                         FileInputStream fis = new FileInputStream(dir);
@@ -225,7 +229,9 @@ public class ChatPanel extends JPanel implements Runnable {
                         this.loader_label.setVisible(false);
                         JOptionPane.showMessageDialog(null, "Can't send file:\n" + exception.getMessage());
                     }
-                }).start();
+                });
+                send_thread.setDaemon(true);
+                send_thread.start();
             }
         }
     }
@@ -308,7 +314,7 @@ public class ChatPanel extends JPanel implements Runnable {
                     }
                     continue; // TODO: pass sleep if connected
                 }
-                Thread.sleep(500); // TODO: update status of client and server
+                Thread.sleep(1000); // TODO: update status of client and server
             }
             catch(Exception e) {
                 this.setEnabled(false);

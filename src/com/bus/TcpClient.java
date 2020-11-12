@@ -7,9 +7,9 @@ import java.net.Socket;
 
 public class TcpClient extends Thread {
     private Socket client;
-    private boolean is_connected_server;
-
     private ChatBus chat_bus;
+
+    private boolean is_connected_server;
 
     public TcpClient(ChatBus chat_bus) {
         this.client = null;

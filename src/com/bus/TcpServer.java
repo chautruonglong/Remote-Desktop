@@ -7,10 +7,11 @@ import java.net.*;
 import java.util.Enumeration;
 import java.util.Vector;
 
-public class TcpServer extends Thread {
+public class TcpServer {
     private ServerSocket server;
     private Socket client;
     private String password;
+
     private boolean is_listening;
     private boolean is_has_partner;
 
@@ -32,8 +33,6 @@ public class TcpServer extends Thread {
             this.server = new ServerSocket();
             this.server.bind(endpoint);
             this.is_listening = true;
-
-            new Thread(this).start();
         }
     }
 
@@ -80,16 +79,6 @@ public class TcpServer extends Thread {
             }
         }
         return ipv4_addresses;
-    }
-
-    @Override
-    public void run() {
-        while(this.is_listening) {
-            try {
-                this.waitingConnectionFromClient();
-            }
-            catch(Exception e) {}
-        }
     }
 
     public boolean isListening() {

@@ -2,6 +2,8 @@ package com.gui;
 
 import com.bus.IRemoteDesktop;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.rmi.RemoteException;
 import javax.swing.*;
 
@@ -12,10 +14,11 @@ public class HardwareDialog extends JDialog implements Runnable {
 
     private HardwareGraph cpu_graphics;
     private HardwareGraph ram_graphics;
-    private DrivesInfoPanel drives_info;
+    private DrivesInfoPanel drives_info_panel;
     private JScrollPane drives_scroll;
 
     private IRemoteDesktop remote_obj;
+    private Thread update_thread;
 
     public HardwareDialog(JFrame owner, IRemoteDesktop remote_obj) throws RemoteException {
         super(owner);
@@ -26,6 +29,12 @@ public class HardwareDialog extends JDialog implements Runnable {
         this.getContentPane().setPreferredSize(new Dimension(HardwareDialog.WIDTH_DIALOG, HardwareDialog.HEIGHT_DIALOG));
         this.setLayout(null);
         this.pack();
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                hardwareDialogWindowClosing(e);
+            }
+        });
 
         this.remote_obj = remote_obj;
 
@@ -33,14 +42,16 @@ public class HardwareDialog extends JDialog implements Runnable {
         this.initComponents();
 
         // TODO: start graph
-        new Thread(this).start();
+        this.update_thread = new Thread(this);
+        this.update_thread.setDaemon(true);
+        this.update_thread.start();
     }
 
     private void initComponents() throws RemoteException {
         // TODO: constructor
         this.cpu_graphics = new HardwareGraph("CPU");
         this.ram_graphics = new HardwareGraph("RAM");
-        this.drives_info = new DrivesInfoPanel(this.remote_obj.getComputerInformation());
+        this.drives_info_panel = new DrivesInfoPanel();
         this.drives_scroll = new JScrollPane();
 
         // TODO: style cpu_graphics
@@ -52,12 +63,17 @@ public class HardwareDialog extends JDialog implements Runnable {
         this.add(this.ram_graphics);
 
         // TODO: style drives_info
-        this.drives_scroll.setViewportView(this.drives_info);
+        this.drives_scroll.setViewportView(this.drives_info_panel);
 
         // TODO: style drivers_scroll
         this.drives_scroll.setLocation(0, this.ram_graphics.getLocation().y + HardwareDialog.HEIGHT_PANEL + 20);
-        this.drives_scroll.setSize(this.drives_info.getSize());
+        this.drives_scroll.setSize(this.drives_info_panel.getSize());
         this.add(this.drives_scroll);
+    }
+
+    private void hardwareDialogWindowClosing(WindowEvent e) {
+        this.update_thread.stop();
+        this.dispose();
     }
 
     @Override
@@ -66,23 +82,12 @@ public class HardwareDialog extends JDialog implements Runnable {
             try {
                 this.cpu_graphics.addValue(this.remote_obj.getCpuLoadServer());
                 this.ram_graphics.addValue(this.remote_obj.getRamUsageServer());
+                this.drives_info_panel.updateInfo(this.remote_obj.getComputerInformation());
                 Thread.sleep(500);
             }
             catch(Exception e){
-                this.dispose();
+                hardwareDialogWindowClosing(null);
             }
         }
-    }
-
-    public HardwareGraph getCpuGraphics() {
-        return this.cpu_graphics;
-    }
-
-    public HardwareGraph getRamGraphics() {
-        return this.ram_graphics;
-    }
-
-    public DrivesInfoPanel getDrivesInfo() {
-        return this.drives_info;
     }
 }

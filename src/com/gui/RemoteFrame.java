@@ -30,6 +30,8 @@ public class RemoteFrame extends JFrame implements Runnable {
     private float dx;
     private float dy;
 
+    private Thread screen_thread;
+
     public RemoteFrame(ClientPanel client_panel, CommonBus common_bus, String quality) throws Exception {
         this.setTitle("You are remoting " + common_bus.getTcpClient().getClient().getLocalAddress().getHostName());
         this.setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("window_icon.png")).getImage());
@@ -92,7 +94,9 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.setupWindow();
 
         // TODO: start thread to share partner's screen
-        new Thread(this).start();
+        this.screen_thread = new Thread(this);
+        this.screen_thread.setDaemon(true);
+        this.screen_thread.start();
     }
 
     private void initComponents() throws RemoteException {
@@ -100,7 +104,7 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.screen_label = new JLabel();
         this.menu_bar = new JMenuBar();
         this.menu_monitor = new JMenu();
-        this.hardware_dialog = new HardwareDialog(this, this.remote_obj);
+        this.hardware_dialog = new HardwareDialog(null, this.remote_obj);
 
         // TODO: set minimum size of remote frame
         this.setMinimumSize(this.hardware_dialog.getPreferredSize());
@@ -242,7 +246,12 @@ public class RemoteFrame extends JFrame implements Runnable {
     public void dispose() {
         super.dispose();
         try {
-            remoteFrameWindowClosing(null);
+            this.hardware_dialog.dispose();
+            this.client_panel.setEnabled(true);
+            this.common_bus.getRmiClient().setRemoteServer(false);
+            this.common_bus.getTcpClient().setConnectedServer(false);
+            this.common_bus.getTcpClient().getClient().close();
+            this.screen_thread.stop();
         }
         catch(IOException exception) {
             JOptionPane.showMessageDialog(null, "Can't close connection");
@@ -250,11 +259,7 @@ public class RemoteFrame extends JFrame implements Runnable {
     }
 
     private void remoteFrameWindowClosing(WindowEvent e) throws IOException {
-        this.hardware_dialog.dispose();
-        this.client_panel.setEnabled(true);
-        this.common_bus.getRmiClient().setRemoteServer(false);
-        this.common_bus.getTcpClient().setConnectedServer(false);
-        this.common_bus.getTcpClient().getClient().close();
+        this.dispose();
     }
 
     private void remoteFrameWindowOpened(WindowEvent e) {

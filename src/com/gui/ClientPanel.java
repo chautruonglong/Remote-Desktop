@@ -133,7 +133,8 @@ public class ClientPanel extends JPanel {
         if(e.getButton() == MouseEvent.BUTTON1 && this.connect_label.isEnabled()) {
             this.setEnabled(false);
             this.loader_label.setVisible(true);
-            new Thread(() -> {
+
+            Thread connect_thread = new Thread(() -> {
                 try {
                     String host = this.main_panel.getHostText().getText().trim();
                     int port = Integer.parseInt(this.main_panel.getPortText().getText().trim());
@@ -164,7 +165,9 @@ public class ClientPanel extends JPanel {
                 }
                 this.setEnabled(true);
                 this.loader_label.setVisible(false);
-            }).start();
+            });
+            connect_thread.setDaemon(true);
+            connect_thread.start();
         }
     }
 }
