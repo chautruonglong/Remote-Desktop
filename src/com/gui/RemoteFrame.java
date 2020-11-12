@@ -31,6 +31,7 @@ public class RemoteFrame extends JFrame implements Runnable {
     private float dy;
 
     private Thread screen_thread;
+    private Thread update_thread;
 
     public RemoteFrame(ClientPanel client_panel, CommonBus common_bus, String quality) throws Exception {
         this.setTitle("You are remoting " + common_bus.getTcpClient().getClient().getLocalAddress().getHostName());
@@ -97,6 +98,11 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.screen_thread = new Thread(this);
         this.screen_thread.setDaemon(true);
         this.screen_thread.start();
+
+        // TODO: start graph
+        this.update_thread = new Thread(this.hardware_dialog);
+        this.update_thread.setDaemon(true);
+        this.update_thread.start();
     }
 
     private void initComponents() throws RemoteException {
@@ -104,7 +110,7 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.screen_label = new JLabel();
         this.menu_bar = new JMenuBar();
         this.menu_monitor = new JMenu();
-        this.hardware_dialog = new HardwareDialog(null, this.remote_obj);
+        this.hardware_dialog = new HardwareDialog(this, this.remote_obj);
 
         // TODO: set minimum size of remote frame
         this.setMinimumSize(this.hardware_dialog.getPreferredSize());
@@ -252,6 +258,7 @@ public class RemoteFrame extends JFrame implements Runnable {
             this.common_bus.getTcpClient().setConnectedServer(false);
             this.common_bus.getTcpClient().getClient().close();
             this.screen_thread.stop();
+            this.update_thread.stop();
         }
         catch(IOException exception) {
             JOptionPane.showMessageDialog(null, "Can't close connection");

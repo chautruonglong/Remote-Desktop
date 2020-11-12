@@ -77,6 +77,7 @@ public class DrivesInfoPanel extends JPanel {
 
             this.validate();
             this.revalidate();
+            this.repaint();
         });
     }
 

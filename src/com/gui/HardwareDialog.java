@@ -1,11 +1,12 @@
 package com.gui;
 
 import com.bus.IRemoteDesktop;
-import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.Dimension;
 import java.rmi.RemoteException;
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 
 public class HardwareDialog extends JDialog implements Runnable {
     public final static int WIDTH_DIALOG = 500;
@@ -18,7 +19,6 @@ public class HardwareDialog extends JDialog implements Runnable {
     private JScrollPane drives_scroll;
 
     private IRemoteDesktop remote_obj;
-    private Thread update_thread;
 
     public HardwareDialog(JFrame owner, IRemoteDesktop remote_obj) throws RemoteException {
         super(owner);
@@ -29,25 +29,14 @@ public class HardwareDialog extends JDialog implements Runnable {
         this.getContentPane().setPreferredSize(new Dimension(HardwareDialog.WIDTH_DIALOG, HardwareDialog.HEIGHT_DIALOG));
         this.setLayout(null);
         this.pack();
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                hardwareDialogWindowClosing(e);
-            }
-        });
 
         this.remote_obj = remote_obj;
 
         // TODO: add components
         this.initComponents();
-
-        // TODO: start graph
-        this.update_thread = new Thread(this);
-        this.update_thread.setDaemon(true);
-        this.update_thread.start();
     }
 
-    private void initComponents() throws RemoteException {
+    private void initComponents() {
         // TODO: constructor
         this.cpu_graphics = new HardwareGraph("CPU");
         this.ram_graphics = new HardwareGraph("RAM");
@@ -71,11 +60,6 @@ public class HardwareDialog extends JDialog implements Runnable {
         this.add(this.drives_scroll);
     }
 
-    private void hardwareDialogWindowClosing(WindowEvent e) {
-        this.update_thread.stop();
-        this.dispose();
-    }
-
     @Override
     public void run() {
         while(true) {
@@ -86,7 +70,7 @@ public class HardwareDialog extends JDialog implements Runnable {
                 Thread.sleep(500);
             }
             catch(Exception e){
-                hardwareDialogWindowClosing(null);
+                this.dispose();
             }
         }
     }

@@ -72,7 +72,7 @@ public class HardwareGraph extends JPanel {
 
         // TODO: draw all values
         g2d.setColor(Color.GREEN);
-        g2d.setStroke(new BasicStroke(1f));
+        g2d.setStroke(new BasicStroke(1.5f));
         if(this.values.size() > 1) {
             int start = this.bounds.x + this.bounds.width - (this.values.size() - 1) * (HardwareGraph.SPACE / 4);
             while(start < this.bounds.x) {
