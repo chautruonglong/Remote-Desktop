@@ -30,8 +30,7 @@ public class RemoteFrame extends JFrame implements Runnable {
     private float dx;
     private float dy;
 
-    private Thread screen_thread;
-    private Thread update_thread;
+    private volatile Thread screen_thread;
 
     public RemoteFrame(ClientPanel client_panel, CommonBus common_bus, String quality) throws Exception {
         this.setTitle("You are remoting " + common_bus.getTcpClient().getClient().getLocalAddress().getHostName());
@@ -40,6 +39,7 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setLocationRelativeTo(null);
         this.setLayout(null);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -98,14 +98,6 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.screen_thread = new Thread(this);
         this.screen_thread.setDaemon(true);
         this.screen_thread.start();
-
-        // TODO: start graph
-        this.update_thread = new Thread(this.hardware_dialog);
-        this.update_thread.setDaemon(true);
-        this.update_thread.start();
-
-        // TODO: start timer
-        this.hardware_dialog.getTimerDrivesInfoPanel().start();
     }
 
     private void initComponents() throws RemoteException {
@@ -197,8 +189,6 @@ public class RemoteFrame extends JFrame implements Runnable {
             }
         });
         this.menu_bar.add(menu_monitor);
-
-        // TODO: style hardware_dialog
     }
 
     private void setupWindow() throws Exception {
@@ -237,39 +227,38 @@ public class RemoteFrame extends JFrame implements Runnable {
     public void run() {
         int width = this.screen_label.getWidth();
         int height = this.screen_label.getHeight();
-        while(this.common_bus.getTcpClient().isConnectedServer()) {
-            try {
+        try {
+            while(this.common_bus.getTcpClient().isConnectedServer()) {
                 byte[] dgram = this.remote_obj.takeScreenshotServer(quality);
                 ByteArrayInputStream bis = new ByteArrayInputStream(dgram);
                 Image screenshot = ImageIO.read(bis).getScaledInstance(width, height, Image.SCALE_SMOOTH);
                 this.screen_label.setIcon(new ImageIcon(screenshot));
             }
-            catch(Exception e) {
-                this.dispose();
-            }
+            this.dispose();
         }
-        this.dispose();
+        catch(Exception e) {
+            this.dispose();
+        }
     }
 
     @Override
     public void dispose() {
-        super.dispose();
         try {
-            this.hardware_dialog.dispose();
+            super.setVisible(false);
+            super.dispose();
             this.client_panel.setEnabled(true);
             this.common_bus.getRmiClient().setRemoteServer(false);
             this.common_bus.getTcpClient().setConnectedServer(false);
             this.common_bus.getTcpClient().getClient().close();
-            this.screen_thread.stop();
-            this.update_thread.stop();
-            this.hardware_dialog.getTimerDrivesInfoPanel().stop();
+            if(!this.screen_thread.isInterrupted())
+                this.screen_thread.isInterrupted();
         }
-        catch(IOException exception) {
+        catch(Exception exception) {
             JOptionPane.showMessageDialog(null, "Can't close connection");
         }
     }
 
-    private void remoteFrameWindowClosing(WindowEvent e) throws IOException {
+    private void remoteFrameWindowClosing(WindowEvent e) {
         this.dispose();
     }
 

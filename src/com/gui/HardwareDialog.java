@@ -16,7 +16,7 @@ public class HardwareDialog extends JDialog implements Runnable {
     private JScrollPane drives_scroll;
 
     private IRemoteDesktop remote_obj;
-    private Timer timer_drives_info_panel;
+    private Thread update_thread;
 
     public HardwareDialog(JFrame owner, IRemoteDesktop remote_obj) throws RemoteException {
         super(owner);
@@ -32,6 +32,11 @@ public class HardwareDialog extends JDialog implements Runnable {
 
         // TODO: add components
         this.initComponents();
+
+        // TODO: start graph
+        this.update_thread = new Thread(this);
+        this.update_thread.setDaemon(true);
+        this.update_thread.start();
     }
 
     private void initComponents() {
@@ -56,33 +61,28 @@ public class HardwareDialog extends JDialog implements Runnable {
         this.drives_scroll.setLocation(0, this.ram_graphics.getLocation().y + HardwareDialog.HEIGHT_PANEL + 20);
         this.drives_scroll.setSize(this.drives_info_panel.getSize());
         this.add(this.drives_scroll);
-
-        // TODO: timer for update driver_info_panel
-        this.timer_drives_info_panel = new Timer(2000, (e) -> {
-            try {
-                this.drives_info_panel.updateInfo(this.remote_obj.getComputerInformation());
-            }
-            catch(RemoteException remoteException) {
-                remoteException.printStackTrace();
-            }
-        });
     }
 
     @Override
     public void run() {
-        while(true) {
-            try {
+        try {
+            while(true) {
                 this.cpu_graphics.addValue(this.remote_obj.getCpuLoadServer());
                 this.ram_graphics.addValue(this.remote_obj.getRamUsageServer());
+                this.drives_info_panel.updateInfo(this.remote_obj.getComputerInformation());
                 Thread.sleep(500);
             }
-            catch(Exception e){
-                this.dispose();
-            }
+        }
+        catch(Exception e){
+            this.setVisible(false);
         }
     }
 
-    public Timer getTimerDrivesInfoPanel() {
-        return this.timer_drives_info_panel;
+    @Override
+    public void dispose() {
+        this.setVisible(false);
+        super.dispose();
+        if(!this.update_thread.isInterrupted())
+            this.update_thread.interrupt();
     }
 }
