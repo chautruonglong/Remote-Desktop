@@ -27,7 +27,7 @@ public class ServerPanel extends JPanel implements Runnable {
 
     private Thread listen_thread;
 
-    public ServerPanel(CommonBus common_bus) throws SocketException {
+    public ServerPanel(CommonBus common_bus) {
         // TODO: style ClientPanel
         this.setLocation(0, MainFrame.HEIGHT_TASKBAR);
         this.setSize(MainFrame.WIDTH_FRAME, MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR);
@@ -144,7 +144,7 @@ public class ServerPanel extends JPanel implements Runnable {
                 this.common_bus.stopListeningOnServer();
 
                 // TODO: stop listen_thread
-                this.listen_thread.stop();
+                this.listen_thread.interrupt();
 
                 // TODO: set status
                 this.main_panel.setEnabled(true);

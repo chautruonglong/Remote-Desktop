@@ -80,7 +80,7 @@ public class HardwareDialog extends JDialog implements Runnable {
 
     @Override
     public void dispose() {
-        this.setVisible(false);
+        super.setVisible(false);
         super.dispose();
         if(!this.update_thread.isInterrupted())
             this.update_thread.interrupt();

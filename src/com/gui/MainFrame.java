@@ -6,7 +6,10 @@ import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.rmi.NotBoundException;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -45,12 +48,21 @@ public class MainFrame extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("window_icon.png")).getImage());
         this.setVisible(true);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    mainFrameWindowClosing(e);
+                }
+                catch(Exception exception) {}
+            }
+        });
 
         // TODO: add components
         this.initComponents();
     }
 
-    private void initComponents() throws IOException {
+    private void initComponents() {
         // TODO: constructor
         this.common_bus = new CommonBus();
         this.taskbar_panel = new JPanel();
@@ -112,6 +124,10 @@ public class MainFrame extends JFrame {
         this.add(this.client_panel);
         this.add(this.server_panel);
         this.add(this.chat_panel);
+    }
+
+    private void mainFrameWindowClosing(WindowEvent e) throws IOException, NotBoundException {
+        this.common_bus.stopListeningOnServer();
     }
 
     private void tabLabelMouseClicked(MouseEvent e, CommonLabel common_label, int key) {
