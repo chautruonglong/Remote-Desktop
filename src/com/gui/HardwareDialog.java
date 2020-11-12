@@ -3,10 +3,7 @@ package com.gui;
 import com.bus.IRemoteDesktop;
 import java.awt.Dimension;
 import java.rmi.RemoteException;
-import javax.swing.ImageIcon;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 
 public class HardwareDialog extends JDialog implements Runnable {
     public final static int WIDTH_DIALOG = 500;
@@ -19,6 +16,7 @@ public class HardwareDialog extends JDialog implements Runnable {
     private JScrollPane drives_scroll;
 
     private IRemoteDesktop remote_obj;
+    private Timer timer_drives_info_panel;
 
     public HardwareDialog(JFrame owner, IRemoteDesktop remote_obj) throws RemoteException {
         super(owner);
@@ -58,6 +56,16 @@ public class HardwareDialog extends JDialog implements Runnable {
         this.drives_scroll.setLocation(0, this.ram_graphics.getLocation().y + HardwareDialog.HEIGHT_PANEL + 20);
         this.drives_scroll.setSize(this.drives_info_panel.getSize());
         this.add(this.drives_scroll);
+
+        // TODO: timer for update driver_info_panel
+        this.timer_drives_info_panel = new Timer(2000, (e) -> {
+            try {
+                this.drives_info_panel.updateInfo(this.remote_obj.getComputerInformation());
+            }
+            catch(RemoteException remoteException) {
+                remoteException.printStackTrace();
+            }
+        });
     }
 
     @Override
@@ -66,12 +74,15 @@ public class HardwareDialog extends JDialog implements Runnable {
             try {
                 this.cpu_graphics.addValue(this.remote_obj.getCpuLoadServer());
                 this.ram_graphics.addValue(this.remote_obj.getRamUsageServer());
-                this.drives_info_panel.updateInfo(this.remote_obj.getComputerInformation());
-                Thread.sleep(500);
+                Thread.sleep(300);
             }
             catch(Exception e){
                 this.dispose();
             }
         }
+    }
+
+    public Timer getTimerDrivesInfoPanel() {
+        return this.timer_drives_info_panel;
     }
 }

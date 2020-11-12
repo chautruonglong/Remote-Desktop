@@ -4,10 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Font;
-import javax.swing.GroupLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
+import javax.swing.*;
 
 public class DrivesInfoPanel extends JPanel {
     public final static String FOREGROUND = "0x26A0DA";
@@ -59,15 +56,17 @@ public class DrivesInfoPanel extends JPanel {
                         " (Used " + usage_space + " GB of " + total_space + " GB)" +
                         "</html>";
                 JLabel drive_label = new JLabel(text);
+                drive_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("hdd_icon.png")));
                 drive_label.setFont(new Font("segoe ui", Font.PLAIN, 12));
-                drive_label.setBounds(80, y, 150, 30);
+                drive_label.setBounds(60, y, 200, 50);
+                drive_label.setIconTextGap(20);
                 this.add(drive_label);
 
                 // TODO: add usage
                 JProgressBar progress = new JProgressBar();
                 progress.setMaximum(total_space);
                 progress.setValue(usage_space);
-                progress.setBounds(drive_label.getX() + drive_label.getWidth() + 50, y + 10, 170, 15);
+                progress.setBounds(drive_label.getX() + drive_label.getWidth() + 20, y + 10, 170, 15);
                 progress.setForeground(Color.decode(DrivesInfoPanel.FOREGROUND));
                 if(total_space - usage_space < 20) progress.setForeground(Color.RED);
                 this.add(progress);

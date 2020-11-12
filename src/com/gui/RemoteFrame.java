@@ -103,6 +103,9 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.update_thread = new Thread(this.hardware_dialog);
         this.update_thread.setDaemon(true);
         this.update_thread.start();
+
+        // TODO: start timer
+        this.hardware_dialog.getTimerDrivesInfoPanel().start();
     }
 
     private void initComponents() throws RemoteException {
@@ -259,6 +262,7 @@ public class RemoteFrame extends JFrame implements Runnable {
             this.common_bus.getTcpClient().getClient().close();
             this.screen_thread.stop();
             this.update_thread.stop();
+            this.hardware_dialog.getTimerDrivesInfoPanel().stop();
         }
         catch(IOException exception) {
             JOptionPane.showMessageDialog(null, "Can't close connection");
