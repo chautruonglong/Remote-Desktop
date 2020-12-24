@@ -54,9 +54,6 @@ public class ChatPanel extends JPanel implements Runnable {
         // TODO: add components
         this.initComponents();
 
-        // TODO: Disable chat
-        this.setEnabled(false);
-
         // TODO: start recv_thread
         this.recv_thread = new Thread(this);
         this.recv_thread.setDaemon(true);
@@ -297,7 +294,6 @@ public class ChatPanel extends JPanel implements Runnable {
         while(true) {
             try {
                 if(this.common_bus.getTcpServer().isHasPartner() || this.common_bus.getTcpClient().isConnectedServer()) {
-                    this.setEnabled(true);
                     Message obj_message = this.chat_bus.recvMessage();
                     if(obj_message != null) {
                         if(obj_message.getCurrentType() == Message.STRING_MESSAGE) {
@@ -319,7 +315,6 @@ public class ChatPanel extends JPanel implements Runnable {
                 Thread.sleep(1000); // TODO: update status of client and server
             }
             catch(Exception e) {
-                this.setEnabled(false);
                 this.root.remove(this);
                 this.root.getPopupMenu().remove(item);
                 this.common_bus.getTcpServer().setHasPartner(false);
@@ -328,6 +323,7 @@ public class ChatPanel extends JPanel implements Runnable {
                 this.root.validate();
                 this.root.revalidate();
                 this.root.repaint();
+                break;
             }
         }
     }
