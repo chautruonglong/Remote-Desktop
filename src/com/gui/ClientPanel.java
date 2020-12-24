@@ -77,9 +77,9 @@ public class ClientPanel extends JPanel {
         // TODO: style connect_label
         this.connect_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("connect_icon.png")));
         this.connect_label.setText("Connect now");
-        this.connect_label.setBounds(210, 280, 110, 30);
+        this.connect_label.setBounds(220, 270, 150, 50);
         this.connect_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.connect_label.setFont(new Font("segoe ui", Font.PLAIN, 13));
+        this.connect_label.setFont(new Font("segoe ui", Font.PLAIN, 15));
         this.connect_label.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -90,7 +90,7 @@ public class ClientPanel extends JPanel {
 
         // TODO: style low_radio
         this.low_radio.setText("Low quality");
-        this.low_radio.setBounds(60, 260, 100, 30);
+        this.low_radio.setBounds(60, 270, 100, 30);
         this.low_radio.setOpaque(false);
         this.low_radio.setSelected(true);
         this.button_group.add(this.low_radio);
@@ -98,14 +98,14 @@ public class ClientPanel extends JPanel {
 
         // TODO: style high_radio
         this.high_radio.setText("High quality");
-        this.high_radio.setBounds(60, 280, 100, 30);
+        this.high_radio.setBounds(60, 290, 100, 30);
         this.high_radio.setOpaque(false);
         this.button_group.add(this.high_radio);
         this.add(this.high_radio);
 
         // TODO: style loader_label
         this.loader_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("loader_icon.gif")));
-        this.loader_label.setBounds(330, 287, 16, 16);
+        this.loader_label.setBounds(340, 287, 16, 16);
         this.loader_label.setVisible(false);
         this.add(this.loader_label);
     }

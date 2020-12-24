@@ -12,10 +12,7 @@ import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.Timer;
+import javax.swing.*;
 
 public class MainFrame extends JFrame {
     public final static int WIDTH_FRAME = 400;
@@ -36,7 +33,12 @@ public class MainFrame extends JFrame {
     private int focus_key;
 
     public MainFrame() throws IOException {
-        ImageIO.setUseCache(false); // TODO: not using disk cache
+        // TODO: not using disk cache
+        ImageIO.setUseCache(false);
+
+        // TODO: set UI
+        UIManager.put("Label.disabledForeground", Color.decode("0xD3D3D3"));
+        UIManager.put("RadioButton.disabledText", Color.decode("0xD3D3D3"));
 
         // TODO: style main frame
         this.getContentPane().setPreferredSize(new Dimension(MainFrame.WIDTH_FRAME, MainFrame.HEIGHT_FRAME));

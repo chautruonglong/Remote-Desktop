@@ -7,16 +7,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.SocketException;
 import java.util.Vector;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 public class ServerPanel extends JPanel implements Runnable {
     public final static String STOPPED_FOREGROUND = "0xF50016";
-    public final static String LISTENING_FOREGROUND = "0x8BDDFB";
+    public final static String LISTENING_FOREGROUND = "0x0042A7";
 
     private CommonPanel main_panel;
     private JLabel status_label;
@@ -82,9 +79,9 @@ public class ServerPanel extends JPanel implements Runnable {
         // TODO: style listen_label
         this.listen_label.setText("Start listening");
         this.listen_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("listen_icon.png")));
-        this.listen_label.setBounds(50, 250, 120, 100);
+        this.listen_label.setBounds(50, 270, 150, 50);
         this.listen_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.listen_label.setFont(new Font("segoe ui", Font.PLAIN, 13));
+        this.listen_label.setFont(new Font("segoe ui", Font.PLAIN, 15));
         this.listen_label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -96,9 +93,9 @@ public class ServerPanel extends JPanel implements Runnable {
         // TODO: style stop_label
         this.stop_label.setText("Stop listening");
         this.stop_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("stop_icon.png")));
-        this.stop_label.setBounds(240, 250, 120, 100);
+        this.stop_label.setBounds(220, 270, 150, 50);
         this.stop_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.stop_label.setFont(new Font("segoe ui", Font.PLAIN, 13));
+        this.stop_label.setFont(new Font("segoe ui", Font.PLAIN, 15));
         this.stop_label.setEnabled(false);
         this.stop_label.addMouseListener(new MouseAdapter() {
             @Override

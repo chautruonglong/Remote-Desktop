@@ -40,7 +40,7 @@ public class ChatPanel extends JPanel implements Runnable {
     private Thread recv_thread;
 
     public ChatPanel(CommonBus common_bus) {
-        // TODO: style ClientPanel
+        // TODO: style ChatPanel
         this.setLocation(0, MainFrame.HEIGHT_TASKBAR);
         this.setSize(MainFrame.WIDTH_FRAME, MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR);
         this.setBackground(Color.decode(ClientPanel.BACKGROUND));
