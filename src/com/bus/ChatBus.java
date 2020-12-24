@@ -8,11 +8,7 @@ import java.net.Socket;
 public class ChatBus {
     private Socket socket;
 
-    public ChatBus() {
-        this.socket = null;
-    }
-
-    public void setSocket(Socket socket) {
+    public ChatBus(Socket socket) {
         this.socket = socket;
     }
 

@@ -1,5 +1,6 @@
 package com.bus;
 
+import com.gui.MainChatPanel;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -8,6 +9,8 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 public class TcpServer {
+    private MainChatPanel main_chat_panel;
+
     private ServerSocket server;
     private Socket client;
     private String password;
@@ -15,15 +18,14 @@ public class TcpServer {
     private boolean is_listening;
     private boolean is_has_partner;
 
-    private ChatBus chat_bus;
 
-    public TcpServer(ChatBus chat_bus) {
+    public TcpServer(MainChatPanel main_chat_panel) {
         this.server = null;
         this.client = null;
         this.password = null;
         this.is_listening = false;
         this.is_has_partner = false;
-        this.chat_bus = chat_bus;
+        this.main_chat_panel = main_chat_panel;
     }
 
     public void startListeningOnTcpServer(String host, int port, String password) throws IOException {
@@ -52,10 +54,10 @@ public class TcpServer {
         String password = dis.readUTF();
         String result = null;
 
-        if(this.is_has_partner) result = "busy";
-        else if(this.password.equals(password)) {
+        if(this.password.equals(password)) {
             result = "true";
-            this.chat_bus.setSocket(this.client);
+            ChatBus chat_bus = new ChatBus(this.client);
+            this.main_chat_panel.addNewConnection(chat_bus);
             this.is_has_partner = true;
         }
         else result = "false";

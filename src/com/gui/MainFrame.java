@@ -29,7 +29,7 @@ public class MainFrame extends JFrame {
     private CommonLabel chat_label;
     private ClientPanel client_panel;
     private ServerPanel server_panel;
-    private ChatPanel chat_panel;
+    private MainChatPanel main_chat_panel;
     private int focus_key;
 
     public MainFrame() throws IOException {
@@ -73,7 +73,9 @@ public class MainFrame extends JFrame {
         this.chat_label = new CommonLabel();
         this.client_panel = new ClientPanel(this.common_bus);
         this.server_panel = new ServerPanel(this.common_bus);
-        this.chat_panel = new ChatPanel(this.common_bus);
+        this.main_chat_panel = new MainChatPanel(this.common_bus);
+
+        this.common_bus.setMainChatPanel(this.main_chat_panel);
 
         // TODO: set focus_key = 1 for client_panel
         this.focus_key = 1;
@@ -122,10 +124,10 @@ public class MainFrame extends JFrame {
         // TODO: default
         this.client_panel.setVisible(true);
         this.server_panel.setVisible(false);
-        this.chat_panel.setVisible(false);
+        this.main_chat_panel.setVisible(false);
         this.add(this.client_panel);
         this.add(this.server_panel);
-        this.add(this.chat_panel);
+        this.add(this.main_chat_panel);
     }
 
     private void mainFrameWindowClosing(WindowEvent e) throws IOException, NotBoundException {
@@ -135,8 +137,8 @@ public class MainFrame extends JFrame {
     private void tabLabelMouseClicked(MouseEvent e, CommonLabel common_label, int key) {
         if(e.getButton() == MouseEvent.BUTTON1) {
             if(key == focus_key) return;
-            JPanel show_panel = (key == 1) ? this.client_panel : (key == 2) ? this.server_panel : this.chat_panel;
-            JPanel hide_panel = (focus_key == 1) ? this.client_panel : (focus_key == 2) ? this.server_panel : this.chat_panel ;
+            JPanel show_panel = (key == 1) ? this.client_panel : (key == 2) ? this.server_panel : this.main_chat_panel;
+            JPanel hide_panel = (focus_key == 1) ? this.client_panel : (focus_key == 2) ? this.server_panel : this.main_chat_panel;
             if(key > focus_key) {
                 this.showPanelsSlider(show_panel, hide_panel, true);
             }

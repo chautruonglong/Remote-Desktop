@@ -1,9 +1,6 @@
 package com.gui;
 
-import com.bus.CommonBus;
-import com.bus.FileMessage;
-import com.bus.Message;
-import com.bus.StringMessage;
+import com.bus.*;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -35,19 +32,24 @@ public class ChatPanel extends JPanel implements Runnable {
     private GroupLayout.ParallelGroup h_parallel;
     private GroupLayout.SequentialGroup v_sequential;
 
+    private MainChatPanel root;
+
     private CommonBus common_bus;
+    private ChatBus chat_bus;
 
     private Thread recv_thread;
 
-    public ChatPanel(CommonBus common_bus) {
+    public ChatPanel(MainChatPanel root, CommonBus common_bus, ChatBus chat_bus) {
         // TODO: style ChatPanel
-        this.setLocation(0, MainFrame.HEIGHT_TASKBAR);
+        this.setLocation(0, MainFrame.HEIGHT_TASKBAR - 42);
         this.setSize(MainFrame.WIDTH_FRAME, MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR);
         this.setBackground(Color.decode(ClientPanel.BACKGROUND));
         this.setLayout(null);
 
         // TODO: class for handle events
         this.common_bus = common_bus;
+        this.chat_bus = chat_bus;
+        this.root = root;
 
         // TODO: add components
         this.initComponents();
@@ -181,7 +183,7 @@ public class ChatPanel extends JPanel implements Runnable {
             String content = this.message_text.getText();
             if(!content.trim().equals("")) {
                 StringMessage str_message = new StringMessage(InetAddress.getLocalHost().getHostName(), content);
-                this.common_bus.getChatBus().sendMessage(str_message);
+                this.chat_bus.sendMessage(str_message);
                 int gap = this.scroll_panel.getWidth() - 180;
 
                 JLabel label = new JLabel("You send a message:" + content);
@@ -214,7 +216,7 @@ public class ChatPanel extends JPanel implements Runnable {
                         // TODO: send file in new thread
                         FileInputStream fis = new FileInputStream(dir);
                         FileMessage file_message = new FileMessage(InetAddress.getLocalHost().getHostName(), dir.getName(), dir.length(), fis.readAllBytes());
-                        this.common_bus.getChatBus().sendMessage(file_message);
+                        this.chat_bus.sendMessage(file_message);
 
                         int gap = this.scroll_panel.getWidth() - 180;
                         file_message.setSender("You");
@@ -237,7 +239,7 @@ public class ChatPanel extends JPanel implements Runnable {
     }
 
     // TODO: show message in panel
-    private void addMessageToPanel(JLabel label, int gap, String color_header) {
+    public void addMessageToPanel(JLabel label, int gap, String color_header) {
         EventQueue.invokeLater(() -> {
             label.setText(this.handleMessage(label.getText(), color_header));
 
@@ -296,7 +298,7 @@ public class ChatPanel extends JPanel implements Runnable {
             try {
                 if(this.common_bus.getTcpServer().isHasPartner() || this.common_bus.getTcpClient().isConnectedServer()) {
                     this.setEnabled(true);
-                    Message obj_message = this.common_bus.getChatBus().recvMessage();
+                    Message obj_message = this.chat_bus.recvMessage();
                     if(obj_message != null) {
                         if(obj_message.getCurrentType() == Message.STRING_MESSAGE) {
                             StringMessage str_message = (StringMessage) obj_message;
@@ -318,9 +320,16 @@ public class ChatPanel extends JPanel implements Runnable {
             }
             catch(Exception e) {
                 this.setEnabled(false);
+                this.root.remove(this);
+                this.root.getPopupMenu().remove(item);
                 this.common_bus.getTcpServer().setHasPartner(false);
                 this.common_bus.getTcpClient().setConnectedServer(false);
             }
         }
+    }
+
+    private ConnectionItem item;
+    public void setConnectionItem(ConnectionItem item) {
+        this.item = item;
     }
 }

@@ -1,20 +1,21 @@
 package com.bus;
 
+import com.gui.MainChatPanel;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
 public class TcpClient extends Thread {
-    private Socket client;
-    private ChatBus chat_bus;
+    private MainChatPanel main_chat_panel;
 
+    private Socket client;
     private boolean is_connected_server;
 
-    public TcpClient(ChatBus chat_bus) {
+    public TcpClient(MainChatPanel main_chat_panel) {
         this.client = null;
         this.is_connected_server = false;
-        this.chat_bus = chat_bus;
+        this.main_chat_panel = main_chat_panel;
     }
 
     public void startConnectingToTcpServer(String host, int port, String password) throws IOException {
@@ -27,16 +28,13 @@ public class TcpClient extends Thread {
             String result = dis.readUTF();
 
             if(result.equals("true")) {
-                this.chat_bus.setSocket(this.client);
+                ChatBus chat_bus = new ChatBus(this.client);
+                this.main_chat_panel.addNewConnection(chat_bus);
                 this.is_connected_server = true;
             }
             else if(result.equals("false")) {
                 this.client.close();
                 throw new IOException("Wrong password of server");
-            }
-            else if(result.equals("busy")) {
-                this.client.close();
-                throw new IOException("Server is busy now");
             }
         }
     }
@@ -44,7 +42,7 @@ public class TcpClient extends Thread {
     public void stopConnectingToTcpServer() throws IOException {
         if(this.is_connected_server = true) {
             this.client.close();
-            this.chat_bus.setSocket(null);
+            //this.chat_bus.setSocket(null);
             this.is_connected_server = false;
         }
     }
