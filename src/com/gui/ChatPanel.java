@@ -324,6 +324,10 @@ public class ChatPanel extends JPanel implements Runnable {
                 this.root.getPopupMenu().remove(item);
                 this.common_bus.getTcpServer().setHasPartner(false);
                 this.common_bus.getTcpClient().setConnectedServer(false);
+
+                this.root.validate();
+                this.root.revalidate();
+                this.root.repaint();
             }
         }
     }

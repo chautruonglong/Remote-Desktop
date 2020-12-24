@@ -96,5 +96,9 @@ public class MainChatPanel extends JPanel {
         this.add(chat_panel);
         this.con_items.add(item);
         this.popup_menu.add(item);
+
+        this.validate();
+        this.revalidate();
+        this.repaint();
     }
 }
