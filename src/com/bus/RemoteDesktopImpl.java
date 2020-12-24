@@ -14,7 +14,7 @@ import javax.imageio.ImageIO;
 import javax.swing.filechooser.FileSystemView;
 
 public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDesktop {
-    public final static int GB = 1000 * 1000 * 1000;
+    public final static int GB = 1024 * 1024 * 1024;
 
     private Robot mr_robot;
     private OperatingSystemMXBean os;
