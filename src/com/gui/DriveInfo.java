@@ -3,27 +3,25 @@ package com.gui;
 import java.io.Serializable;
 
 public class DriveInfo implements Serializable {
-    public final static int GB = 1024 * 1024 * 1024;
-
     private String name;
-    private int free;
-    private int total;
+    private long free;
+    private long total;
 
     public DriveInfo(String name, long free, long total) {
         this.name = name;
-        this.free = (int) (free / DriveInfo.GB);
-        this.total = (int) (total / DriveInfo.GB);
+        this.free = free;
+        this.total = total;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public int getFreeSpace() {
-        return free;
+    public long getFreeSpace() {
+        return this.free;
     }
 
-    public int getTotalSpace() {
-        return total;
+    public long getTotalSpace() {
+        return this.total;
     }
 }

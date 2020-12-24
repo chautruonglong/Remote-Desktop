@@ -21,5 +21,7 @@ public interface IRemoteDesktop extends Remote {
     // TODO: for get hardware info of server
     double getCpuLoadServer() throws RemoteException;
     double getRamUsageServer() throws RemoteException;
+    long[] getRamMemories() throws RemoteException;
+    int getCpus() throws RemoteException;
     ComputerInfo getComputerInformation() throws RemoteException;
 }

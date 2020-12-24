@@ -18,6 +18,10 @@ public class HardwareDialog extends JDialog implements Runnable {
     private IRemoteDesktop remote_obj;
     private Thread update_thread;
 
+    private long ram;
+    private long swap;
+    private int cpus;
+
     public HardwareDialog(JFrame owner, IRemoteDesktop remote_obj) throws RemoteException {
         super(owner);
         this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
@@ -29,6 +33,10 @@ public class HardwareDialog extends JDialog implements Runnable {
         this.pack();
 
         this.remote_obj = remote_obj;
+        this.cpus = this.remote_obj.getCpus();
+        long[] memories = this.remote_obj.getRamMemories();
+        this.ram = memories[0];
+        this.swap = memories[1];
 
         // TODO: add components
         this.initComponents();
@@ -41,8 +49,8 @@ public class HardwareDialog extends JDialog implements Runnable {
 
     private void initComponents() {
         // TODO: constructor
-        this.cpu_graphics = new HardwareGraph("CPU");
-        this.ram_graphics = new HardwareGraph("RAM");
+        this.cpu_graphics = new HardwareGraph("CPU (" + this.cpus / 2 + " cores " + this.cpus + " threads)");
+        this.ram_graphics = new HardwareGraph("RAM (" + this.ram + " GB) - SWAP (" + this.swap + " GB)");
         this.drives_info_panel = new DrivesInfoPanel();
         this.drives_scroll = new JScrollPane();
 

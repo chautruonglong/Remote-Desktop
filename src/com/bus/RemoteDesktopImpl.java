@@ -14,6 +14,8 @@ import javax.imageio.ImageIO;
 import javax.swing.filechooser.FileSystemView;
 
 public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDesktop {
+    public final static int GB = 1000 * 1000 * 1000;
+
     private Robot mr_robot;
     private OperatingSystemMXBean os;
 
@@ -75,15 +77,34 @@ public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDes
 
     @Override
     public double getRamUsageServer() throws RemoteException {
-        double percent = (double) (this.os.getTotalMemorySize() - this.os.getFreeMemorySize()) / this.os.getTotalMemorySize();
-        return percent;
+        double ratio = (double) (this.os.getTotalMemorySize() - this.os.getFreeMemorySize()) / this.os.getTotalMemorySize();
+        return ratio;
+    }
+
+    @Override
+    public long[] getRamMemories() throws RemoteException {
+        return new long[] {
+            this.os.getTotalMemorySize() / RemoteDesktopImpl.GB,
+            this.os.getTotalSwapSpaceSize() / RemoteDesktopImpl.GB
+        };
+    }
+
+    @Override
+    public int getCpus() throws RemoteException {
+        return this.os.getAvailableProcessors();
     }
 
     @Override
     public ComputerInfo getComputerInformation() throws RemoteException {
         ComputerInfo pc_info = new ComputerInfo(this.os.getName());
         for(File file : File.listRoots()) {
-            pc_info.getDrives().add(new DriveInfo(FileSystemView.getFileSystemView().getSystemDisplayName(file), file.getFreeSpace(), file.getTotalSpace()));
+            pc_info.getDrives().add(
+                new DriveInfo(
+                    FileSystemView.getFileSystemView().getSystemDisplayName(file),
+                    file.getFreeSpace() / RemoteDesktopImpl.GB,
+                    file.getTotalSpace() / RemoteDesktopImpl.GB
+                )
+            );
         }
         return pc_info;
     }

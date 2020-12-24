@@ -30,7 +30,7 @@ public class DrivesInfoPanel extends JPanel {
         this.group_layout.setVerticalGroup(this.v_parallel);
         this.setLayout(this.group_layout);
     }
-    int check = 0;
+
     public void updateInfo(ComputerInfo pc_info) {
         EventQueue.invokeLater(() -> {
             this.removeAll();
@@ -46,8 +46,8 @@ public class DrivesInfoPanel extends JPanel {
             // TODO: style drives
             int y = os_name_label.getY() + os_name_label.getHeight() + 10;
             for(DriveInfo drive : pc_info.getDrives()) {
-                int total_space = drive.getTotalSpace();
-                int usage_space = drive.getTotalSpace() - drive.getFreeSpace();
+                long total_space = drive.getTotalSpace();
+                long usage_space = total_space - drive.getFreeSpace();
 
                 // TODO: add name
                 String text =
@@ -64,8 +64,8 @@ public class DrivesInfoPanel extends JPanel {
 
                 // TODO: add usage
                 JProgressBar progress = new JProgressBar();
-                progress.setMaximum(total_space);
-                progress.setValue(usage_space);
+                progress.setMaximum((int) total_space);
+                progress.setValue((int) usage_space);
                 progress.setBounds(drive_label.getX() + drive_label.getWidth() + 20, y + 10, 170, 15);
                 progress.setForeground(Color.decode(DrivesInfoPanel.FOREGROUND));
                 if(total_space - usage_space < 20) progress.setForeground(Color.RED);

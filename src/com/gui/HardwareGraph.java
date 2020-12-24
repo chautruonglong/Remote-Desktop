@@ -23,7 +23,7 @@ public class HardwareGraph extends JPanel {
         this.setBackground(Color.GREEN);
 
         this.values = new ArrayList<>();
-        this.bounds = new Rectangle(50, 15, HardwareDialog.WIDTH_DIALOG - 100, HardwareDialog.HEIGHT_PANEL - 30);
+        this.bounds = new Rectangle(50, 30, HardwareDialog.WIDTH_DIALOG - 100, HardwareDialog.HEIGHT_PANEL - 45);
         this.h_lines = this.bounds.height / HardwareGraph.SPACE;
         this.v_lines = this.bounds.width / HardwareGraph.SPACE;
     }
