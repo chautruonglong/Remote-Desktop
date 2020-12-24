@@ -6,7 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class ChatBus {
-    Socket socket;
+    private Socket socket;
 
     public ChatBus() {
         this.socket = null;
