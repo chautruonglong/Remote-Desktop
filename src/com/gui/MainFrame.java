@@ -16,7 +16,7 @@ import javax.swing.*;
 
 public class MainFrame extends JFrame {
     public final static int WIDTH_FRAME = 400;
-    public final static int HEIGHT_FRAME = 400;
+    public final static int HEIGHT_FRAME = 420;
     public final static int HEIGHT_TASKBAR = 50;
     public final static String TASKBAR_BACKGROUND = "0x000942";
 

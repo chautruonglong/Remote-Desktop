@@ -20,6 +20,8 @@ public class MainChatPanel extends JPanel {
 
     private CommonBus common_bus;
 
+    private int count;
+
     public MainChatPanel(CommonBus common_bus) {
         // TODO: style MainChatPanel
         this.setLocation(0, MainFrame.HEIGHT_TASKBAR);
@@ -41,8 +43,11 @@ public class MainChatPanel extends JPanel {
         this.popup_menu = new JPopupMenu();
         this.con_items = new ArrayList<>();
 
+        // TODO: set value for count
+        this.count = 0;
+
         // TODO: style connections_label
-        this.connections_label.setText("All connections");
+        this.connections_label.setText("<html>All connections <font color='red'>(" + this.count + ")</font></html>");
         this.connections_label.setBounds(0, 0, 100, 15);
         this.connections_label.setFont(new Font("segoe ui", Font.PLAIN, 13));
         this.connections_label.addMouseListener(new MouseAdapter() {
@@ -64,9 +69,14 @@ public class MainChatPanel extends JPanel {
 
         // TODO: style menu_bar
         this.menu_bar.add(this.connections_label);
-        this.menu_bar.setBounds(0, 0, MainFrame.WIDTH_FRAME, 15);
+        this.menu_bar.setBounds(0, 0, MainFrame.WIDTH_FRAME, 20);
         this.menu_bar.setLayout(new GridBagLayout());
         this.add(this.menu_bar);
+    }
+
+    public void addCount(int n) {
+        this.count += n;
+        this.connections_label.setText("<html>All connections <font color='red'>(" + this.count + ")</font></html>");
     }
 
     private void popupMenuMousePressed(MouseEvent e) {
@@ -97,6 +107,7 @@ public class MainChatPanel extends JPanel {
         this.con_items.add(item);
         this.popup_menu.add(item);
 
+        this.addCount(1);
         this.validate();
         this.revalidate();
         this.repaint();

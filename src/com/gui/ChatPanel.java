@@ -85,7 +85,7 @@ public class ChatPanel extends JPanel implements Runnable {
         this.scroll_panel.setViewportView(this.content_panel);
         this.scroll_panel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         this.scroll_panel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        this.scroll_panel.setBounds(10, 10, MainFrame.WIDTH_FRAME - 20, MainFrame.HEIGHT_FRAME - 150);
+        this.scroll_panel.setBounds(10, 15, MainFrame.WIDTH_FRAME - 20, MainFrame.HEIGHT_FRAME - 150);
         this.add(this.scroll_panel);
 
         // TODO: style message_text
@@ -320,6 +320,7 @@ public class ChatPanel extends JPanel implements Runnable {
                 this.common_bus.getTcpServer().setHasPartner(false);
                 this.common_bus.getTcpClient().setConnectedServer(false);
 
+                this.root.addCount(-1);
                 this.root.validate();
                 this.root.revalidate();
                 this.root.repaint();
