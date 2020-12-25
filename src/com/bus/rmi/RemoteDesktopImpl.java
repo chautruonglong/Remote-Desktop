@@ -84,8 +84,8 @@ public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDes
     @Override
     public long[] getRamMemories() throws RemoteException {
         return new long[] {
-            this.os.getTotalMemorySize() / RemoteDesktopImpl.GB,
-            this.os.getTotalSwapSpaceSize() / RemoteDesktopImpl.GB
+            1 + this.os.getTotalMemorySize() / RemoteDesktopImpl.GB,
+            1 + this.os.getTotalSwapSpaceSize() / RemoteDesktopImpl.GB
         };
     }
 
