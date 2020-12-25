@@ -86,7 +86,7 @@ public class MainChatPanel extends JPanel {
 
     private void popupMenuMousePressed(MouseEvent e) {
         if(e.getButton() == MouseEvent.BUTTON1) {
-            this.popup_menu.show(this.connections_label, 100, 10);
+            this.popup_menu.show(this.connections_label, 130, 5);
         }
     }
 
