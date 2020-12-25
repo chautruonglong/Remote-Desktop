@@ -2,8 +2,8 @@ package com.gui.chat;
 
 import com.bus.chat.ChatBus;
 import com.bus.common.CommonBus;
-import com.gui.client.ClientPanel;
 import com.gui.MainFrame;
+import com.gui.client.ClientPanel;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -11,7 +11,10 @@ import java.awt.GridBagLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 public class MainChatPanel extends JPanel {
     private JLabel connections_label;

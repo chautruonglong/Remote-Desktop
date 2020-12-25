@@ -1,10 +1,8 @@
 package test;
 
 import com.sun.management.OperatingSystemMXBean;
-import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import javax.swing.filechooser.FileSystemView;
 
 public class Test {
     public static void main(String[] args) throws IOException {

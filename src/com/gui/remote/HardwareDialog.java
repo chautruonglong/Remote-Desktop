@@ -3,7 +3,10 @@ package com.gui.remote;
 import com.bus.rmi.IRemoteDesktop;
 import java.awt.Dimension;
 import java.rmi.RemoteException;
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 
 public class HardwareDialog extends JDialog implements Runnable {
     public final static int WIDTH_DIALOG = 500;

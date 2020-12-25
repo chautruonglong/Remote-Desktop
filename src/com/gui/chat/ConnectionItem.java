@@ -1,6 +1,5 @@
 package com.gui.chat;
 
-import com.gui.chat.ChatPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;

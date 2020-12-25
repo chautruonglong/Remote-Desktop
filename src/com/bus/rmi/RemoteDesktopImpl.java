@@ -22,7 +22,7 @@ public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDes
     public RemoteDesktopImpl() throws RemoteException, AWTException {
         super();
         this.mr_robot = new Robot();
-        this.os = (OperatingSystemMXBean)ManagementFactory.getOperatingSystemMXBean();
+        this.os = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
     }
 
     @Override

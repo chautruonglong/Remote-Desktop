@@ -5,7 +5,7 @@ import com.bus.chat.FileMessage;
 import com.bus.chat.Message;
 import com.bus.chat.StringMessage;
 import com.bus.common.CommonBus;
-import com.gui.*;
+import com.gui.MainFrame;
 import com.gui.client.ClientPanel;
 import com.gui.common.CommonLabel;
 import java.awt.Color;
@@ -326,16 +326,22 @@ public class ChatPanel extends JPanel implements Runnable {
                 Thread.sleep(1000); // TODO: update status of client and server
             }
             catch(Exception e) {
-                this.root.remove(this);
-                this.root.getPopupMenu().remove(item);
                 this.common_bus.getTcpServer().setHasPartner(false);
                 this.common_bus.getTcpClient().setConnectedServer(false);
 
+                this.root.remove(this);
+                this.root.getPopupMenu().remove(item);
                 this.root.addCount(-1);
                 this.root.getChatPanels().remove(this);
                 this.root.validate();
                 this.root.revalidate();
                 this.root.repaint();
+
+                try {
+                    this.chat_bus.getSocket().close();
+                }
+                catch(Exception exception) {}
+
                 break;
             }
         }

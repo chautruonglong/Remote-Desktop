@@ -1,7 +1,7 @@
 package com.gui.common;
 
-import com.gui.client.ClientPanel;
 import com.gui.MainFrame;
+import com.gui.client.ClientPanel;
 import java.awt.Color;
 import java.awt.Font;
 import javax.swing.*;
