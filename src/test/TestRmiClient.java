@@ -1,7 +1,7 @@
 package test;
 
-import com.bus.IRemoteDesktop;
-import com.bus.RmiClient;
+import com.bus.rmi.IRemoteDesktop;
+import com.bus.rmi.RmiClient;
 import java.awt.AWTException;
 import java.awt.EventQueue;
 import java.awt.image.BufferedImage;

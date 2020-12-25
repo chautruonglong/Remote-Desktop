@@ -1,6 +1,6 @@
 package test;
 
-import com.gui.HardwareDialog;
+import com.gui.remote.HardwareDialog;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.MouseAdapter;

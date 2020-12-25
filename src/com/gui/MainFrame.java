@@ -1,6 +1,10 @@
 package com.gui;
 
-import com.bus.CommonBus;
+import com.bus.common.CommonBus;
+import com.gui.chat.MainChatPanel;
+import com.gui.client.ClientPanel;
+import com.gui.common.CommonLabel;
+import com.gui.server.ServerPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;

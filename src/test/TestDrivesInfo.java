@@ -1,9 +1,9 @@
 package test;
 
-import com.gui.ComputerInfo;
-import com.gui.DriveInfo;
-import com.gui.DrivesInfoPanel;
-import com.gui.HardwareDialog;
+import com.gui.remote.ComputerInfo;
+import com.gui.remote.DriveInfo;
+import com.gui.remote.DrivesInfoPanel;
+import com.gui.remote.HardwareDialog;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.File;

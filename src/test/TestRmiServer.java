@@ -1,7 +1,7 @@
 package test;
 
-import com.bus.IRemoteDesktop;
-import com.bus.RmiServer;
+import com.bus.rmi.IRemoteDesktop;
+import com.bus.rmi.RmiServer;
 import java.rmi.Naming;
 
 public class TestRmiServer {
