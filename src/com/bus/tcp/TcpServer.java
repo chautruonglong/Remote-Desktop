@@ -95,4 +95,8 @@ public class TcpServer {
     public void setHasPartner(boolean b) {
         this.is_has_partner = b;
     }
+
+    public ServerSocket getServer() {
+        return this.server;
+    }
 }

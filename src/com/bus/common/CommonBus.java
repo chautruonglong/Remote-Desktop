@@ -62,6 +62,12 @@ public class CommonBus {
 
     public void startConnectingToServer(String host, int port, String password) throws Exception {
         // TODO: check server is listening?
+        if(this.tcp_server.isListening()) {
+            String ip_server = this.tcp_server.getServer().getInetAddress().getHostAddress();
+            if(host.equals(ip_server)) throw new Exception("Can't remote yourself!");
+            System.out.println(ip_server);
+            System.out.println(host);
+        }
         if(this.tcp_client.isConnectedServer()) throw new Exception("You are remoting!");
         this.tcp_client.startConnectingToTcpServer(host, port, password);
         this.rmi_client.startConnectingToRmiServer(host, port + 1);
