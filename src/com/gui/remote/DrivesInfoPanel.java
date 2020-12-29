@@ -68,7 +68,7 @@ public class DrivesInfoPanel extends JPanel {
                 progress.setValue((int) usage_space);
                 progress.setBounds(drive_label.getX() + drive_label.getWidth() + 20, y + 10, 170, 15);
                 progress.setForeground(Color.decode(DrivesInfoPanel.FOREGROUND));
-                if(total_space - usage_space < 20) progress.setForeground(Color.RED);
+                if((double) usage_space / total_space >= 0.9) progress.setForeground(Color.RED);
                 this.add(progress);
 
                 y += drive_label.getHeight() + 10;
