@@ -31,7 +31,7 @@ java -jar ./out/artifacts/RemoteDesktop_jar/RemoteDesktop.jar
     <img src="screenshots/cpu.gif" alt="alt text" style="max-width:100%;">
 </p>
 
-> ### Remote server
+> ### Client remote server
 
 <p align="center">
     <img src="screenshots/remote.png" alt="alt text" style="max-width:100%;">
