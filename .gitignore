@@ -12,7 +12,6 @@ out/
 target/
 *.class
 *.jar
-!lib/*.jar
 
 # OS
 .DS_Store

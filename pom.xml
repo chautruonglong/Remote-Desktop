@@ -14,48 +14,11 @@
     <properties>
         <maven.compiler.release>15</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jdeli.version>trial</jdeli.version>
     </properties>
-
-    <dependencies>
-        <!--
-            jdeli-trial.jar is a local library not available in Maven Central.
-            It is installed to the local Maven repository automatically during
-            the validate phase by the maven-install-plugin below.
-        -->
-        <dependency>
-            <groupId>com.idrsolutions</groupId>
-            <artifactId>jdeli</artifactId>
-            <version>${jdeli.version}</version>
-        </dependency>
-    </dependencies>
 
     <build>
         <plugins>
-            <!-- Install the local jdeli jar into the local Maven repo before compilation. -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>3.1.1</version>
-                <executions>
-                    <execution>
-                        <id>install-jdeli</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <file>${project.basedir}/lib/jdeli-trial.jar</file>
-                            <groupId>com.idrsolutions</groupId>
-                            <artifactId>jdeli</artifactId>
-                            <version>${jdeli.version}</version>
-                            <packaging>jar</packaging>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Build an executable fat jar with all dependencies bundled. -->
+            <!-- Build an executable fat jar. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

@@ -18,7 +18,6 @@ import java.rmi.NotBoundException;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /**
@@ -61,10 +60,7 @@ public class MainFrame extends JFrame {
      * @throws IOException if any icon resource cannot be loaded
      */
     public MainFrame() throws IOException {
-        // Disable ImageIO disk caching for the whole application lifetime.
-        ImageIO.setUseCache(false);
-
-        // Update UIManager defaults for disabled label/radio button colours.
+        // Update UIManager defaults for disabled label/radio button colors.
         UIManager.put("Label.disabledForeground", Color.decode(AppStyles.COLOR_DISABLED));
         UIManager.put("RadioButton.disabledText", Color.decode(AppStyles.COLOR_DISABLED));
 

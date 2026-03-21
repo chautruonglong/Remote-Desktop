@@ -21,8 +21,8 @@ import javax.swing.filechooser.FileSystemView;
  * <p>{@link Robot} is used for screen capture and input injection. The
  * {@link OperatingSystemMXBean} provides CPU and memory statistics.</p>
  *
- * <p>Image I/O disk caching is disabled ({@code ImageIO.setUseCache(false)}) to avoid
- * unnecessary disk writes during high-frequency screen captures.</p>
+ * <p>Image I/O disk caching is disabled on the server side ({@code ImageIO.setUseCache(false)})
+ * to avoid unnecessary disk writes during high-frequency screen captures.</p>
  */
 public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDesktop {
 
