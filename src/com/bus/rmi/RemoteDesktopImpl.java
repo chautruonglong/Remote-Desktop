@@ -1,7 +1,8 @@
 package com.bus.rmi;
 
-import com.gui.remote.ComputerInfo;
-import com.gui.remote.DriveInfo;
+import com.model.ComputerInfo;
+import com.model.DriveInfo;
+import com.model.ImageQuality;
 import com.sun.management.OperatingSystemMXBean;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -13,99 +14,163 @@ import java.rmi.server.UnicastRemoteObject;
 import javax.imageio.ImageIO;
 import javax.swing.filechooser.FileSystemView;
 
+/**
+ * Server-side implementation of {@link IRemoteDesktop} that exposes the local machine's
+ * screen, mouse, keyboard, and hardware metrics to remote clients via Java RMI.
+ *
+ * <p>{@link Robot} is used for screen capture and input injection. The
+ * {@link OperatingSystemMXBean} provides CPU and memory statistics.</p>
+ *
+ * <p>Image I/O disk caching is disabled ({@code ImageIO.setUseCache(false)}) to avoid
+ * unnecessary disk writes during high-frequency screen captures.</p>
+ */
 public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDesktop {
-    public final static int GB = 1024 * 1024 * 1024;
 
-    private Robot mr_robot;
-    private OperatingSystemMXBean os;
+    /**
+     * Number of bytes in one gigabyte, used to convert byte counts to GB.
+     * Named {@code BYTES_PER_GB} to clarify the unit.
+     */
+    public static final long BYTES_PER_GB = 1024L * 1024 * 1024;
 
+    private final Robot robot;
+    private final OperatingSystemMXBean osBean;
+
+    /**
+     * Constructs a new {@code RemoteDesktopImpl}.
+     *
+     * <p>Disables ImageIO disk caching so that screen captures are encoded entirely
+     * in memory, avoiding latency from disk access.</p>
+     *
+     * @throws RemoteException if RMI registration fails
+     * @throws AWTException    if a {@link Robot} cannot be created (headless environment)
+     */
     public RemoteDesktopImpl() throws RemoteException, AWTException {
         super();
-        this.mr_robot = new Robot();
-        this.os = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        ImageIO.setUseCache(false);
+        this.robot = new Robot();
+        this.osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
     }
 
+    // -------------------------------------------------------------------------
+    // Screen capture
+    // -------------------------------------------------------------------------
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Captures the entire screen bounds and encodes the result using the format
+     * specified by {@code quality} (JPEG for low, PNG for high).</p>
+     */
     @Override
-    public byte[] takeScreenshotServer(String quality) throws Exception {
-        Dimension screen_size = Toolkit.getDefaultToolkit().getScreenSize();
-        Rectangle bounds = new Rectangle(screen_size);
-        BufferedImage screenshot = this.mr_robot.createScreenCapture(bounds);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ImageIO.setUseCache(false); // TODO: not using disk cache (using ram)
-        ImageIO.write(screenshot, quality, bos);
-        return bos.toByteArray();
+    public byte[] captureScreen(ImageQuality quality) throws Exception {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Rectangle screenBounds = new Rectangle(screenSize);
+        BufferedImage screenshot = this.robot.createScreenCapture(screenBounds);
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        ImageIO.write(screenshot, quality.getFormatName(), buffer);
+        return buffer.toByteArray();
     }
 
-    // TODO: mouse
+    // -------------------------------------------------------------------------
+    // Mouse control
+    // -------------------------------------------------------------------------
+
+    /** {@inheritDoc} */
     @Override
-    public void mouseMovedServer(int x, int y) throws RemoteException {
-        this.mr_robot.mouseMove(x, y);
+    public void moveMouse(int x, int y) throws RemoteException {
+        this.robot.mouseMove(x, y);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void mousePressedServer(int buttons) throws RemoteException {
-        this.mr_robot.mousePress(buttons);
+    public void pressMouse(int buttonMask) throws RemoteException {
+        this.robot.mousePress(buttonMask);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void mouseReleasedServer(int buttons) throws RemoteException {
-        this.mr_robot.mouseRelease(buttons);
+    public void releaseMouse(int buttonMask) throws RemoteException {
+        this.robot.mouseRelease(buttonMask);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void mouseWheelServer(int wheel_amt) throws RemoteException {
-        this.mr_robot.mouseWheel(wheel_amt);
+    public void scrollMouseWheel(int wheelAmount) throws RemoteException {
+        this.robot.mouseWheel(wheelAmount);
     }
 
-    // TODO: keyboard
+    // -------------------------------------------------------------------------
+    // Keyboard control
+    // -------------------------------------------------------------------------
+
+    /** {@inheritDoc} */
     @Override
-    public void keyPressedServer(int keycode) throws RemoteException {
-        this.mr_robot.keyPress(keycode);
+    public void pressKey(int keyCode) throws RemoteException {
+        this.robot.keyPress(keyCode);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void keyReleasedServer(int keycode) throws RemoteException {
-        this.mr_robot.keyRelease(keycode);
+    public void releaseKey(int keyCode) throws RemoteException {
+        this.robot.keyRelease(keyCode);
     }
 
-    // TODO: for get hardware info
+    // -------------------------------------------------------------------------
+    // Hardware monitoring
+    // -------------------------------------------------------------------------
 
+    /** {@inheritDoc} */
     @Override
-    public double getCpuLoadServer() throws RemoteException {
-        return this.os.getCpuLoad();
+    public double getCpuLoad() throws RemoteException {
+        return this.osBean.getCpuLoad();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Calculated as {@code (total - free) / total}.</p>
+     */
     @Override
-    public double getRamUsageServer() throws RemoteException {
-        double ratio = (double) (this.os.getTotalMemorySize() - this.os.getFreeMemorySize()) / this.os.getTotalMemorySize();
-        return ratio;
+    public double getRamUsage() throws RemoteException {
+        long total = this.osBean.getTotalMemorySize();
+        long free = this.osBean.getFreeMemorySize();
+        return (double) (total - free) / total;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Values are rounded up to the nearest GB using integer ceiling arithmetic
+     * ({@code 1 + bytes / BYTES_PER_GB}).</p>
+     */
     @Override
-    public long[] getRamMemories() throws RemoteException {
-        return new long[] {
-            1 + this.os.getTotalMemorySize() / RemoteDesktopImpl.GB,
-            1 + this.os.getTotalSwapSpaceSize() / RemoteDesktopImpl.GB
-        };
+    public long[] getRamCapacities() throws RemoteException {
+        long totalRamGb  = 1 + this.osBean.getTotalMemorySize()    / BYTES_PER_GB;
+        long totalSwapGb = 1 + this.osBean.getTotalSwapSpaceSize()  / BYTES_PER_GB;
+        return new long[]{ totalRamGb, totalSwapGb };
     }
 
+    /** {@inheritDoc} */
     @Override
-    public int getCpus() throws RemoteException {
-        return this.os.getAvailableProcessors();
+    public int getProcessorCount() throws RemoteException {
+        return this.osBean.getAvailableProcessors();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Iterates over all file system roots reported by the JVM and collects
+     * drive name, free space, and total space (all in GB).</p>
+     */
     @Override
-    public ComputerInfo getComputerInformation() throws RemoteException {
-        ComputerInfo pc_info = new ComputerInfo(this.os.getName());
-        for(File file : File.listRoots()) {
-            pc_info.getDrives().add(
-                new DriveInfo(
-                    FileSystemView.getFileSystemView().getSystemDisplayName(file),
-                    file.getFreeSpace() / RemoteDesktopImpl.GB,
-                    file.getTotalSpace() / RemoteDesktopImpl.GB
-                )
-            );
+    public ComputerInfo getComputerInfo() throws RemoteException {
+        ComputerInfo info = new ComputerInfo(this.osBean.getName());
+        for (File root : File.listRoots()) {
+            String displayName = FileSystemView.getFileSystemView().getSystemDisplayName(root);
+            long freeGb  = root.getFreeSpace()  / BYTES_PER_GB;
+            long totalGb = root.getTotalSpace()  / BYTES_PER_GB;
+            info.getDrives().add(new DriveInfo(displayName, freeGb, totalGb));
         }
-        return pc_info;
+        return info;
     }
 }

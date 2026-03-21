@@ -5,6 +5,7 @@ import com.gui.MainFrame;
 import com.gui.common.CommonLabel;
 import com.gui.common.CommonPanel;
 import com.gui.remote.RemoteFrame;
+import com.model.ImageQuality;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -13,165 +14,203 @@ import java.awt.event.MouseEvent;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Panel that lets the user configure and initiate a remote desktop connection to a server.
+ *
+ * <p>The user enters the server's IP address, port, and password, selects an image quality,
+ * and clicks "Connect now". The connection is established on a background thread to avoid
+ * blocking the EDT. On success a {@link RemoteFrame} is opened.</p>
+ *
+ * <p>Colour constants ({@link #BACKGROUND}, {@link #FOREGROUND}) are shared with other
+ * panels so the application maintains a consistent colour scheme.</p>
+ */
 public class ClientPanel extends JPanel {
-    public final static String BACKGROUND = "0x00A571";
-    public final static String FOREGROUND = "0x003927";
 
-    private CommonPanel main_panel;
-    private CommonLabel connect_label;
-    private ButtonGroup button_group;
-    private JRadioButton low_radio;
-    private JRadioButton high_radio;
-    private JLabel loader_label;
+    /** Hex colour string for the panel background — used by other panels for consistency. */
+    public static final String BACKGROUND = "0x00A571";
 
-    private CommonBus common_bus;
+    /** Hex colour string for the panel foreground text — used by other panels for consistency. */
+    public static final String FOREGROUND = "0x003927";
 
-    public ClientPanel(CommonBus common_bus) {
-        // TODO: style ClientPanel
+    private static final String FONT_FAMILY = "segoe ui";
+    private static final long MAX_FILE_SIZE_BYTES = 30L * 1024 * 1024;
+
+    private CommonPanel mainPanel;
+    private CommonLabel connectLabel;
+    private ButtonGroup qualityButtonGroup;
+    private JRadioButton lowQualityRadio;
+    private JRadioButton highQualityRadio;
+    private JLabel loaderLabel;
+
+    private final CommonBus commonBus;
+
+    /**
+     * Creates the client panel.
+     *
+     * @param commonBus the shared transport facade used to establish the remote connection
+     */
+    public ClientPanel(CommonBus commonBus) {
+        this.commonBus = commonBus;
+
         this.setLocation(0, MainFrame.HEIGHT_TASKBAR);
         this.setSize(MainFrame.WIDTH_FRAME, MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR);
-        this.setBackground(Color.decode(ClientPanel.BACKGROUND));
+        this.setBackground(Color.decode(BACKGROUND));
         this.setLayout(null);
 
-        // TODO: class for handle events
-        this.common_bus = common_bus;
-
-        // TODO: add components
         this.initComponents();
     }
 
     private void initComponents() {
-        // TODO: constructor
-        this.main_panel = new CommonPanel();
-        this.connect_label = new CommonLabel();
-        this.button_group = new ButtonGroup();
-        this.low_radio = new JRadioButton();
-        this.high_radio = new JRadioButton();
-        this.loader_label = new JLabel();
+        this.mainPanel         = new CommonPanel();
+        this.connectLabel      = new CommonLabel();
+        this.qualityButtonGroup = new ButtonGroup();
+        this.lowQualityRadio   = new JRadioButton();
+        this.highQualityRadio  = new JRadioButton();
+        this.loaderLabel       = new JLabel();
 
-        // TODO: style main panel
-        this.main_panel.setBorder(BorderFactory.createTitledBorder(null, "Connect To Server",
+        // Override the shared panel's border title for the client context.
+        this.mainPanel.setBorder(BorderFactory.createTitledBorder(
+            null,
+            "Connect To Server",
             TitledBorder.DEFAULT_JUSTIFICATION,
             TitledBorder.DEFAULT_POSITION,
-            new Font("segoe ui", Font.BOLD, 16),
-            Color.decode(ClientPanel.FOREGROUND))
+            new Font(FONT_FAMILY, Font.BOLD, 16),
+            Color.decode(FOREGROUND)
+        ));
+        this.add(this.mainPanel);
+
+        // Customise shared panel labels for the client perspective.
+        this.mainPanel.getHostLabel().setText("Remote IP:");
+        this.mainPanel.getPortLabel().setText("Remote port:");
+        this.mainPanel.getPasswordLabel().setText("Password:");
+
+        // Show host text field (type address); hide host combo (for server's local IPs).
+        this.mainPanel.getHostCombo().setVisible(false);
+        this.mainPanel.getHostTextField().setVisible(true);
+
+        // Show masked password field; hide plain text field.
+        this.mainPanel.getPasswordTextField().setVisible(false);
+        this.mainPanel.getPasswordField().setVisible(true);
+
+        // Context-sensitive help text.
+        this.mainPanel.getHelpLabel().setText(
+            "<html>" +
+            "&gt;&gt; Help: Enter the IP address and port of the server you want to control.<br>" +
+            "&gt;&gt; Example: 192.168.0.1:9999" +
+            "</html>"
         );
-        this.add(this.main_panel);
 
-        // TODO: style host_label
-        this.main_panel.getHostLabel().setText("Remote IP:");
-
-        // TODO: style host_text
-        this.main_panel.getHostCombo().setVisible(false);
-        this.main_panel.getHostText().setVisible(true);
-
-        // TODO: style port_label
-        this.main_panel.getPortLabel().setText("Remote port:");
-
-        // TODO: style pass_label
-        this.main_panel.getPassLabel().setText("Password:");
-
-        // TODO: style pass_field
-        this.main_panel.getPassText().setVisible(false);
-        this.main_panel.getPassField().setVisible(true);
-
-        // TODO: style help_label
-        this.main_panel.getHelpLabel().setText("<html>>>Help: Enter a name or an IP address and port of server which you want to remote.<br>>>Example: 192.168.0.1:9999</html>");
-
-        // TODO: style connect_label
-        this.connect_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("connect_icon.png")));
-        this.connect_label.setText("Connect now");
-        this.connect_label.setBounds(220, 290, 150, 50);
-        this.connect_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.connect_label.setFont(new Font("segoe ui", Font.PLAIN, 15));
-        this.connect_label.addMouseListener(new MouseAdapter() {
+        // "Connect now" action label.
+        this.connectLabel.setIcon(
+            new ImageIcon(getClass().getClassLoader().getResource("connect_icon.png"))
+        );
+        this.connectLabel.setText("Connect now");
+        this.connectLabel.setBounds(220, 290, 150, 50);
+        this.connectLabel.setForeground(Color.decode(FOREGROUND));
+        this.connectLabel.setFont(new Font(FONT_FAMILY, Font.PLAIN, 15));
+        this.connectLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                connectLabelMousePressed(e);
+                onConnectClicked(e);
             }
         });
-        this.add(this.connect_label);
+        this.add(this.connectLabel);
 
-        // TODO: style low_radio
-        this.low_radio.setText("Low quality");
-        this.low_radio.setBounds(60, 290, 100, 30);
-        this.low_radio.setOpaque(false);
-        this.low_radio.setSelected(true);
-        this.button_group.add(this.low_radio);
-        this.add(this.low_radio);
+        // Image quality radio buttons.
+        this.lowQualityRadio.setText("Low quality");
+        this.lowQualityRadio.setBounds(60, 290, 100, 30);
+        this.lowQualityRadio.setOpaque(false);
+        this.lowQualityRadio.setSelected(true);
+        this.qualityButtonGroup.add(this.lowQualityRadio);
+        this.add(this.lowQualityRadio);
 
-        // TODO: style high_radio
-        this.high_radio.setText("High quality");
-        this.high_radio.setBounds(60, 310, 100, 30);
-        this.high_radio.setOpaque(false);
-        this.button_group.add(this.high_radio);
-        this.add(this.high_radio);
+        this.highQualityRadio.setText("High quality");
+        this.highQualityRadio.setBounds(60, 310, 100, 30);
+        this.highQualityRadio.setOpaque(false);
+        this.qualityButtonGroup.add(this.highQualityRadio);
+        this.add(this.highQualityRadio);
 
-        // TODO: style loader_label
-        this.loader_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("loader_icon.gif")));
-        this.loader_label.setBounds(340, 307, 16, 16);
-        this.loader_label.setVisible(false);
-        this.add(this.loader_label);
+        // Spinner shown while connecting.
+        this.loaderLabel.setIcon(
+            new ImageIcon(getClass().getClassLoader().getResource("loader_icon.gif"))
+        );
+        this.loaderLabel.setBounds(340, 307, 16, 16);
+        this.loaderLabel.setVisible(false);
+        this.add(this.loaderLabel);
     }
 
+    /**
+     * Enables or disables all interactive controls on this panel.
+     *
+     * @param enabled {@code true} to enable, {@code false} to disable
+     */
     @Override
-    public void setEnabled(boolean b) {
-        this.main_panel.setEnabled(b);
-        this.low_radio.setEnabled(b);
-        this.high_radio.setEnabled(b);
-        this.connect_label.setEnabled(b);
+    public void setEnabled(boolean enabled) {
+        this.mainPanel.setEnabled(enabled);
+        this.lowQualityRadio.setEnabled(enabled);
+        this.highQualityRadio.setEnabled(enabled);
+        this.connectLabel.setEnabled(enabled);
     }
 
-    private boolean isFormatIpv4(String host) {
-        int count = 0;
-        for(int i = 0; i < host.length(); ++i) {
-            if(host.charAt(i) == '.') ++count;
-        }
-        // TODO: count = 3 for ipv4
-        // TODO: count = 0 for host name
-        return count == 3 || count == 0;
+    /**
+     * Returns {@code true} if the given host string is either a valid IPv4 dotted-quad
+     * (exactly three dots) or a hostname (no dots — resolved via DNS).
+     *
+     * @param host the user-supplied host string
+     * @return {@code true} if the format is acceptable
+     */
+    private boolean isValidHostFormat(String host) {
+        long dotCount = host.chars().filter(c -> c == '.').count();
+        // Three dots → IPv4 address; zero dots → simple hostname.
+        return dotCount == 3 || dotCount == 0;
     }
 
-    // TODO: handle events of connect_label
-    private void connectLabelMousePressed(MouseEvent e) {
-        if(e.getButton() == MouseEvent.BUTTON1 && this.connect_label.isEnabled()) {
-            this.setEnabled(false);
-            this.loader_label.setVisible(true);
+    /**
+     * Handles the "Connect now" click: validates input, connects in a background thread,
+     * and opens a {@link RemoteFrame} on success.
+     */
+    private void onConnectClicked(MouseEvent e) {
+        if (e.getButton() != MouseEvent.BUTTON1 || !this.connectLabel.isEnabled()) return;
 
-            Thread connect_thread = new Thread(() -> {
-                try {
-                    String host = this.main_panel.getHostText().getText().trim();
-                    int port = Integer.parseInt(this.main_panel.getPortText().getText().trim());
-                    String password = this.main_panel.getPassField().getText().trim();
-                    // TODO: check format ipv4
-                    if(!this.isFormatIpv4(host)) throw new Exception("Wrong format IPV4");
+        this.setEnabled(false);
+        this.loaderLabel.setVisible(true);
 
-                    // TODO: start connect
-                    this.common_bus.startConnectingToServer(host, port, password);
+        Thread connectThread = new Thread(() -> {
+            try {
+                String host     = this.mainPanel.getHostTextField().getText().trim();
+                int    port     = Integer.parseInt(this.mainPanel.getPortTextField().getText().trim());
+                // Use getPassword() to avoid leaving the password as a String in the pool.
+                String password = new String(this.mainPanel.getPasswordField().getPassword()).trim();
 
-                    // TODO: show remote screen
-                    EventQueue.invokeLater(() -> {
-                        try {
-                            if(this.low_radio.isSelected()) {
-                                new RemoteFrame(this, this.common_bus, "jpg");
-                            }
-                            else if(this.high_radio.isSelected()) {
-                                new RemoteFrame(this, this.common_bus, "png");
-                            }
-                        }
-                        catch(Exception exception) {
-                            JOptionPane.showMessageDialog(this, "Can't start remoting to server:\n" + exception.getMessage());
-                        }
-                    });
-                }
-                catch(Exception exception) {
-                    JOptionPane.showMessageDialog(this, "Can't connect to server:\n" + exception.getMessage());
-                }
+                if (!isValidHostFormat(host)) throw new Exception("Invalid host format — expected IPv4 or hostname");
+
+                this.commonBus.connectToServer(host, port, password);
+
+                ImageQuality quality = this.highQualityRadio.isSelected()
+                    ? ImageQuality.HIGH
+                    : ImageQuality.LOW;
+
+                EventQueue.invokeLater(() -> {
+                    try {
+                        new RemoteFrame(this, this.commonBus, quality);
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(
+                            this,
+                            "Could not start remote session:\n" + ex.getMessage()
+                        );
+                    }
+                });
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Could not connect to server:\n" + ex.getMessage()
+                );
+            } finally {
                 this.setEnabled(true);
-                this.loader_label.setVisible(false);
-            });
-            connect_thread.setDaemon(true);
-            connect_thread.start();
-        }
+                this.loaderLabel.setVisible(false);
+            }
+        });
+        connectThread.setDaemon(true);
+        connectThread.start();
     }
 }

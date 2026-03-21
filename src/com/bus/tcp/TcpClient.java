@@ -7,56 +7,106 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class TcpClient extends Thread {
-    private MainChatPanel main_chat_panel;
+/**
+ * Manages the client side of a TCP connection to a remote desktop server.
+ *
+ * <p>Handles the authentication handshake with the server: sends the password and reads
+ * back the server's accept/reject response. On success, creates a {@link ChatBus} and
+ * registers it with the shared {@link MainChatPanel}.</p>
+ *
+ * <p>This class is a plain helper and does <em>not</em> extend {@link Thread}. Threading
+ * is the responsibility of the calling UI panel.</p>
+ */
+public class TcpClient {
 
-    private Socket client;
-    private boolean is_connected_server;
+    private final MainChatPanel mainChatPanel;
 
-    public TcpClient(MainChatPanel main_chat_panel) {
-        this.client = null;
-        this.is_connected_server = false;
-        this.main_chat_panel = main_chat_panel;
+    private Socket socket;
+    private boolean connected;
+
+    /**
+     * Creates a new {@code TcpClient} that will register connections with the given panel.
+     *
+     * @param mainChatPanel the panel that receives new chat sessions
+     */
+    public TcpClient(MainChatPanel mainChatPanel) {
+        this.mainChatPanel = mainChatPanel;
+        this.socket = null;
+        this.connected = false;
     }
 
-    public void startConnectingToTcpServer(String host, int port, String password) throws IOException {
-        if(this.is_connected_server == false) {
-            this.client = new Socket(host, port);
-            DataOutputStream dos = new DataOutputStream(this.client.getOutputStream());
-            DataInputStream dis = new DataInputStream(this.client.getInputStream());
+    /**
+     * Connects to the server at {@code host:port}, authenticates with {@code password},
+     * and on success opens a {@link ChatBus} session.
+     *
+     * <p>If the password is rejected by the server, the socket is closed and an
+     * {@link IOException} is thrown. Does nothing if already connected.</p>
+     *
+     * @param host     the server hostname or IP address
+     * @param port     the server TCP port
+     * @param password the session password to send
+     * @throws IOException if the connection or authentication fails
+     */
+    public void connect(String host, int port, String password) throws IOException {
+        if (connected) return;
 
-            dos.writeUTF(password);
-            String result = dis.readUTF();
+        this.socket = new Socket(host, port);
 
-            if(result.equals("true")) {
-                ChatBus chat_bus = new ChatBus(this.client);
-                this.main_chat_panel.addNewConnection(chat_bus);
-                this.is_connected_server = true;
-            }
-            else if(result.equals("false")) {
-                this.client.close();
-                throw new IOException("Wrong password of server");
-            }
+        DataOutputStream dataOut = new DataOutputStream(this.socket.getOutputStream());
+        DataInputStream dataIn = new DataInputStream(this.socket.getInputStream());
+
+        dataOut.writeUTF(password);
+        String authResult = dataIn.readUTF();
+
+        if ("true".equals(authResult)) {
+            ChatBus chatBus = new ChatBus(this.socket);
+            this.mainChatPanel.addNewConnection(chatBus);
+            this.connected = true;
+        } else {
+            this.socket.close();
+            throw new IOException("Authentication failed: wrong password");
         }
     }
 
-    public void stopConnectingToTcpServer() throws IOException {
-        if(this.is_connected_server = true) {
-            this.client.close();
-            //this.chat_bus.setSocket(null);
-            this.is_connected_server = false;
+    /**
+     * Disconnects from the server by closing the socket.
+     *
+     * <p>Does nothing if not currently connected.</p>
+     *
+     * @throws IOException if closing the socket fails
+     */
+    public void disconnect() throws IOException {
+        if (connected) {
+            this.socket.close();
+            this.connected = false;
         }
     }
 
-    public boolean isConnectedServer() {
-        return this.is_connected_server;
+    /**
+     * Returns {@code true} if the client is currently connected to a server.
+     *
+     * @return {@code true} when connected
+     */
+    public boolean isConnected() {
+        return connected;
     }
 
-    public void setConnectedServer(boolean b) {
-        this.is_connected_server = b;
+    /**
+     * Overrides the connection state flag. Use this when the connection is known to have
+     * dropped externally (e.g., detected by the receive thread).
+     *
+     * @param connected the new connection state
+     */
+    public void setConnected(boolean connected) {
+        this.connected = connected;
     }
 
-    public Socket getClient() {
-        return this.client;
+    /**
+     * Returns the underlying socket, or {@code null} if not connected.
+     *
+     * @return the client socket
+     */
+    public Socket getSocket() {
+        return socket;
     }
 }

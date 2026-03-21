@@ -3,67 +3,104 @@ package com.gui.remote;
 import com.bus.common.CommonBus;
 import com.bus.rmi.IRemoteDesktop;
 import com.gui.client.ClientPanel;
+import com.model.ImageQuality;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
+/**
+ * Full-screen window that streams the remote server's desktop and forwards local mouse
+ * and keyboard events to the server via RMI.
+ *
+ * <p>A background daemon thread continuously captures screenshots from the server and
+ * updates the display label. The thread runs as long as the TCP client connection is active.</p>
+ *
+ * <p>Scale factors ({@link #scaleX}, {@link #scaleY}) compensate for size differences
+ * between the client's screen and the server's screen when translating mouse coordinates.</p>
+ *
+ * <p>{@link #dispose()} stops the screen thread, resets transport state, and re-enables
+ * the {@link ClientPanel} so the user can start a new session.</p>
+ */
 public class RemoteFrame extends JFrame implements Runnable {
-    private ClientPanel client_panel;
-    private CommonBus common_bus;
-    private IRemoteDesktop remote_obj;
 
-    private JLabel screen_label;
-    private JMenuBar menu_bar;
-    private JMenu menu_monitor;
-    private HardwareDialog hardware_dialog;
+    private final ClientPanel clientPanel;
+    private final CommonBus commonBus;
+    private final IRemoteDesktop remoteDesktop;
+    private final ImageQuality imageQuality;
 
-    private Dimension screen_size;
-    private Insets frame_insets;
-    private Insets taskbar_insets;
-    private String quality;
+    private JLabel screenLabel;
+    private JMenuBar menuBar;
+    private JMenu monitorMenu;
+    private HardwareDialog hardwareDialog;
 
-    // TODO: properties for remote larger screen
-    private float dx;
-    private float dy;
+    private Dimension displaySize;
 
-    private volatile Thread screen_thread;
+    /**
+     * Ratio of server screen width to displayed label width.
+     * Used to translate client mouse X coordinates into server screen coordinates.
+     */
+    private float scaleX;
 
-    public RemoteFrame(ClientPanel client_panel, CommonBus common_bus, String quality) throws Exception {
-        this.setTitle("You are remoting " + common_bus.getTcpClient().getClient().getLocalAddress().getHostName());
-        this.setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("window_icon.png")).getImage());
+    /**
+     * Ratio of server screen height to displayed label height.
+     * Used to translate client mouse Y coordinates into server screen coordinates.
+     */
+    private float scaleY;
+
+    private volatile Thread screenThread;
+
+    /**
+     * Creates and opens the remote desktop viewing window.
+     *
+     * <p>Fetches one screenshot immediately to determine display geometry, then starts
+     * the background streaming thread. The {@code clientPanel} is disabled while the
+     * session is active.</p>
+     *
+     * @param clientPanel  the panel to re-enable when the session ends
+     * @param commonBus    the shared transport facade
+     * @param imageQuality the image format to request from the server
+     * @throws Exception if the initial screenshot or RMI setup fails
+     */
+    public RemoteFrame(ClientPanel clientPanel, CommonBus commonBus, ImageQuality imageQuality)
+            throws Exception {
+        this.clientPanel   = clientPanel;
+        this.commonBus     = commonBus;
+        this.imageQuality  = imageQuality;
+        this.remoteDesktop = this.commonBus.getRmiClient().getRemoteDesktop();
+
+        this.setTitle("Remoting: " + commonBus.getTcpClient().getSocket().getLocalAddress().getHostName());
+        this.setIconImage(
+            new ImageIcon(getClass().getClassLoader().getResource("window_icon.png")).getImage()
+        );
         this.getContentPane().setBackground(Color.BLACK);
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setLocationRelativeTo(null);
         this.setLayout(null);
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                try {
-                    remoteFrameWindowClosing(e);
-                }
-                catch(Exception exception) {
-                    dispose();
-                    JOptionPane.showMessageDialog(null, "Can't close connection");
-                }
+                dispose();
             }
 
             @Override
             public void windowOpened(WindowEvent e) {
-                remoteFrameWindowOpened(e);
+                clientPanel.setEnabled(false);
             }
         });
+
         this.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 try {
-                    remoteFrameKeyPressed(e);
-                }
-                catch(RemoteException remoteException) {
+                    remoteDesktop.pressKey(e.getKeyCode());
+                } catch (RemoteException ex) {
                     dispose();
                 }
             }
@@ -71,53 +108,38 @@ public class RemoteFrame extends JFrame implements Runnable {
             @Override
             public void keyReleased(KeyEvent e) {
                 try {
-                    remoteFrameKeyReleased(e);
-                }
-                catch(RemoteException remoteException) {
+                    remoteDesktop.releaseKey(e.getKeyCode());
+                } catch (RemoteException ex) {
                     dispose();
                 }
             }
         });
+
         this.setVisible(true);
 
-        this.quality = quality;
-        this.client_panel = client_panel;
-        this.common_bus = common_bus;
-        this.remote_obj = this.common_bus.getRmiClient().getRemoteObject();
-        this.screen_size = Toolkit.getDefaultToolkit().getScreenSize();
-        this.frame_insets = this.getInsets();
-        this.taskbar_insets = Toolkit.getDefaultToolkit().getScreenInsets(this.getGraphicsConfiguration());
-
-        // TODO: add components
         this.initComponents();
+        this.setupDisplayGeometry();
 
-        // TODO: setup window
-        this.setupWindow();
-
-        // TODO: start thread to share partner's screen
-        this.screen_thread = new Thread(this);
-        this.screen_thread.setDaemon(true);
-        this.screen_thread.start();
+        this.screenThread = new Thread(this);
+        this.screenThread.setDaemon(true);
+        this.screenThread.start();
     }
 
     private void initComponents() throws RemoteException {
-        // TODO: constructor
-        this.screen_label = new JLabel();
-        this.menu_bar = new JMenuBar();
-        this.menu_monitor = new JMenu();
-        this.hardware_dialog = new HardwareDialog(this, this.remote_obj);
+        this.screenLabel     = new JLabel();
+        this.menuBar         = new JMenuBar();
+        this.monitorMenu     = new JMenu();
+        this.hardwareDialog  = new HardwareDialog(this, this.remoteDesktop);
 
-        // TODO: set minimum size of remote frame
-        this.setMinimumSize(this.hardware_dialog.getPreferredSize());
+        this.setMinimumSize(this.hardwareDialog.getPreferredSize());
 
-        // TODO: style screen_label
-        this.screen_label.addMouseListener(new MouseAdapter() {
+        // Screen label — forwards mouse interaction to the server.
+        this.screenLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 try {
-                    screenLabelMousePressed(e);
-                }
-                catch(RemoteException remoteException) {
+                    remoteDesktop.pressMouse(InputEvent.getMaskForButton(e.getButton()));
+                } catch (RemoteException ex) {
                     dispose();
                 }
             }
@@ -125,195 +147,163 @@ public class RemoteFrame extends JFrame implements Runnable {
             @Override
             public void mouseReleased(MouseEvent e) {
                 try {
-                    screenLabelMouseReleased(e);
-                }
-                catch(RemoteException remoteException) {
+                    remoteDesktop.releaseMouse(InputEvent.getMaskForButton(e.getButton()));
+                } catch (RemoteException ex) {
                     dispose();
                 }
             }
         });
-        this.addMouseWheelListener((e) -> {
+
+        this.addMouseWheelListener(e -> {
             try {
-                screenLabelMouseWheelMoved(e);
-            }
-            catch(RemoteException remoteException) {
+                remoteDesktop.scrollMouseWheel(e.getWheelRotation());
+            } catch (RemoteException ex) {
                 dispose();
             }
         });
-        this.screen_label.addMouseMotionListener(new MouseMotionAdapter() {
+
+        this.screenLabel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                try {
-                    screenLabelMouseMoved(e);
-                }
-                catch(RemoteException remoteException) {
-                    dispose();
-                }
+                sendMousePosition(e);
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                try {
-                    screenLabelMouseDragged(e);
-                }
-                catch(RemoteException remoteException) {
-                    dispose();
-                }
+                sendMousePosition(e);
             }
         });
-        this.add(this.screen_label);
 
-        // TODO: style menu_bar
-        this.menu_bar.setLayout(new GridBagLayout());
-        this.menu_bar.setBackground(Color.decode("0x9A9A9A"));
-        this.menu_bar.setPreferredSize(new Dimension(0, 25));
-        this.setJMenuBar(this.menu_bar);
+        this.add(this.screenLabel);
 
-        // TODO: style menu
-        this.menu_monitor.setText("Show monitor");
-        this.menu_bar.setFont(new Font("segoe ui", Font.PLAIN, 14));
-        this.menu_monitor.addMouseListener(new MouseAdapter() {
+        // Menu bar with "Show monitor" option.
+        this.menuBar.setLayout(new GridBagLayout());
+        this.menuBar.setBackground(Color.decode("0x9A9A9A"));
+        this.menuBar.setPreferredSize(new Dimension(0, 25));
+        this.setJMenuBar(this.menuBar);
+
+        this.monitorMenu.setText("Show monitor");
+        this.menuBar.setFont(new Font("segoe ui", Font.PLAIN, 14));
+        this.monitorMenu.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                menuMonitorMousePressed(e);
+                if (e.getButton() == MouseEvent.BUTTON1) hardwareDialog.setVisible(true);
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                menuMonitorMouseEntered(e);
+                monitorMenu.setFont(new Font("segoe ui", Font.BOLD, 16));
+                setCursor(new Cursor(Cursor.HAND_CURSOR));
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                menuMonitorMouseExited(e);
+                monitorMenu.setFont(new Font("segoe ui", Font.PLAIN, 14));
+                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
         });
-        this.menu_bar.add(menu_monitor);
+        this.menuBar.add(this.monitorMenu);
     }
 
-    private void setupWindow() throws Exception {
-        ImageIO.setUseCache(false);
-        byte[] dgram = this.remote_obj.takeScreenshotServer(quality);
-        ByteArrayInputStream bis = new ByteArrayInputStream(dgram);
-        BufferedImage screenshot = ImageIO.read(bis);
+    /**
+     * Fetches one screenshot from the server, computes the scale factors needed to map
+     * client mouse coordinates to server screen coordinates, and positions the screen label.
+     *
+     * @throws Exception if the screenshot or geometry computation fails
+     */
+    private void setupDisplayGeometry() throws Exception {
+        byte[] screenshotBytes = this.remoteDesktop.captureScreen(this.imageQuality);
+        BufferedImage screenshot = ImageIO.read(new ByteArrayInputStream(screenshotBytes));
 
-        this.screen_size.width -= (this.taskbar_insets.left + this.taskbar_insets.right);
-        this.screen_size.height -= (this.taskbar_insets.top + this.taskbar_insets.bottom + this.frame_insets.top + this.menu_bar.getPreferredSize().height);
+        Dimension localScreen   = Toolkit.getDefaultToolkit().getScreenSize();
+        Insets    frameInsets   = this.getInsets();
+        Insets    taskbarInsets = Toolkit.getDefaultToolkit().getScreenInsets(this.getGraphicsConfiguration());
 
-        // TODO: your screen lager than partner's screen
-        if(this.screen_size.width > screenshot.getWidth() && this.screen_size.height > screenshot.getHeight()) {
-            int h_gap = (this.screen_size.width - screenshot.getWidth()) / 2;
-            int v_gap = (this.screen_size.height - screenshot.getHeight()) / 2;
+        int availWidth  = localScreen.width  - (taskbarInsets.left + taskbarInsets.right);
+        int availHeight = localScreen.height - (taskbarInsets.top  + taskbarInsets.bottom + frameInsets.top + this.menuBar.getPreferredSize().height);
 
-            this.dx = 1;
-            this.dy = 1;
-            this.screen_label.setBounds(h_gap, v_gap, screenshot.getWidth(), screenshot.getHeight());
-        }
-        // TODO: your screen smaller than partner's screen
-        else {
-            float ratio = (float) screenshot.getWidth() / screenshot.getHeight();
-            int tmp_width = this.screen_size.width;
-            this.screen_size.width = (int) (ratio * this.screen_size.height);
-
-            int h_gap = (tmp_width - this.screen_size.width) / 2;
-
-            this.dx = (float) screenshot.getWidth() / this.screen_size.width;
-            this.dy = (float) screenshot.getHeight() / this.screen_size.height;
-            this.screen_label.setBounds(h_gap, 0, this.screen_size.width, this.screen_size.height);
+        if (availWidth > screenshot.getWidth() && availHeight > screenshot.getHeight()) {
+            // Server screen is smaller — centre it with no scaling.
+            int hGap = (availWidth  - screenshot.getWidth())  / 2;
+            int vGap = (availHeight - screenshot.getHeight()) / 2;
+            this.scaleX = 1f;
+            this.scaleY = 1f;
+            this.displaySize = new Dimension(screenshot.getWidth(), screenshot.getHeight());
+            this.screenLabel.setBounds(hGap, vGap, screenshot.getWidth(), screenshot.getHeight());
+        } else {
+            // Server screen is larger — scale to fit, preserving aspect ratio.
+            float ratio      = (float) screenshot.getWidth() / screenshot.getHeight();
+            int scaledWidth  = (int) (ratio * availHeight);
+            int hGap         = (availWidth - scaledWidth) / 2;
+            this.scaleX = (float) screenshot.getWidth()  / scaledWidth;
+            this.scaleY = (float) screenshot.getHeight() / availHeight;
+            this.displaySize = new Dimension(scaledWidth, availHeight);
+            this.screenLabel.setBounds(hGap, 0, scaledWidth, availHeight);
         }
     }
 
+    /**
+     * Screen streaming loop — repeatedly fetches screenshots and updates the display label
+     * while the TCP client connection is active. Disposes the frame on disconnection or error.
+     */
     @Override
     public void run() {
-        int width = this.screen_label.getWidth();
-        int height = this.screen_label.getHeight();
+        int width  = this.screenLabel.getWidth();
+        int height = this.screenLabel.getHeight();
         try {
-            while(this.common_bus.getTcpClient().isConnectedServer()) {
-                byte[] dgram = this.remote_obj.takeScreenshotServer(quality);
-                ByteArrayInputStream bis = new ByteArrayInputStream(dgram);
-                Image screenshot = ImageIO.read(bis).getScaledInstance(width, height, Image.SCALE_SMOOTH);
-                this.screen_label.setIcon(new ImageIcon(screenshot));
+            while (this.commonBus.isClientConnected()) {
+                byte[] screenshotBytes = this.remoteDesktop.captureScreen(this.imageQuality);
+                BufferedImage raw = ImageIO.read(new ByteArrayInputStream(screenshotBytes));
+                Image scaled = raw.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+                this.screenLabel.setIcon(new ImageIcon(scaled));
             }
-            this.dispose();
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
+            // Connection dropped or session ended — fall through to dispose.
+        } finally {
             this.dispose();
         }
     }
 
+    /**
+     * Closes the session: stops the screen thread, resets transport state, re-enables the
+     * client panel, and releases all window resources.
+     */
     @Override
     public void dispose() {
+        if (this.screenThread != null && !this.screenThread.isInterrupted()) {
+            this.screenThread.interrupt();
+        }
         try {
-            super.setVisible(false);
-            super.dispose();
-            this.client_panel.setEnabled(true);
-            this.common_bus.getRmiClient().setRemoteServer(false);
-            this.common_bus.getTcpClient().setConnectedServer(false);
-            this.common_bus.getTcpClient().getClient().close();
-            if(!this.screen_thread.isInterrupted())
-                this.screen_thread.isInterrupted();
+            this.commonBus.getRmiClient().setConnected(false);
+            this.commonBus.getTcpClient().setConnected(false);
+            if (this.commonBus.getTcpClient().getSocket() != null) {
+                this.commonBus.getTcpClient().getSocket().close();
+            }
+        } catch (IOException ex) {
+            System.err.println("Error closing client socket on dispose: " + ex.getMessage());
         }
-        catch(Exception exception) {
-            JOptionPane.showMessageDialog(null, "Can't close connection");
+        this.clientPanel.setEnabled(true);
+        super.setVisible(false);
+        super.dispose();
+    }
+
+    // -------------------------------------------------------------------------
+    // Mouse coordinate translation helper
+    // -------------------------------------------------------------------------
+
+    /**
+     * Translates a client-side mouse event position to server screen coordinates and
+     * forwards a mouse-move RMI call.
+     *
+     * @param e the mouse event from the screen label
+     */
+    private void sendMousePosition(MouseEvent e) {
+        try {
+            int serverX = (int) (e.getX() * scaleX);
+            int serverY = (int) (e.getY() * scaleY);
+            this.remoteDesktop.moveMouse(serverX, serverY);
+        } catch (RemoteException ex) {
+            dispose();
         }
-    }
-
-    private void remoteFrameWindowClosing(WindowEvent e) {
-        this.dispose();
-    }
-
-    private void remoteFrameWindowOpened(WindowEvent e) {
-        this.client_panel.setEnabled(false);
-    }
-
-    // TODO: remote keyboard of server
-    private void remoteFrameKeyPressed(KeyEvent e) throws RemoteException {
-        this.remote_obj.keyPressedServer(e.getKeyCode());
-    }
-
-    private void remoteFrameKeyReleased(KeyEvent e) throws RemoteException {
-        this.remote_obj.keyReleasedServer(e.getKeyCode());
-    }
-
-    // TODO: remote mouse of server
-    private void screenLabelMousePressed(MouseEvent e) throws RemoteException {
-        this.remote_obj.mousePressedServer(InputEvent.getMaskForButton(e.getButton()));
-    }
-
-    private void screenLabelMouseReleased(MouseEvent e) throws RemoteException {
-        this.remote_obj.mouseReleasedServer(InputEvent.getMaskForButton(e.getButton()));
-    }
-
-    private void screenLabelMouseMoved(MouseEvent e) throws RemoteException {
-        float x = e.getX() * dx;
-        float y = e.getY() * dy;
-        this.remote_obj.mouseMovedServer((int) x, (int) y);
-    }
-
-    private void screenLabelMouseDragged(MouseEvent e) throws RemoteException {
-        float x = e.getX() * dx;
-        float y = e.getY() * dy;
-        this.remote_obj.mouseMovedServer((int) x, (int) y);
-    }
-
-    private void screenLabelMouseWheelMoved(MouseWheelEvent e) throws RemoteException {
-        this.remote_obj.mouseWheelServer(e.getWheelRotation());
-    }
-
-    // TODO: get hardware info of server
-    private void menuMonitorMousePressed(MouseEvent e) {
-        if(e.getButton() == MouseEvent.BUTTON1) {
-            this.hardware_dialog.setVisible(true);
-        }
-    }
-
-    private void menuMonitorMouseEntered(MouseEvent e) {
-        this.menu_monitor.setFont(new Font("segoe ui", Font.BOLD, 16));
-        this.setCursor(new Cursor(Cursor.HAND_CURSOR));
-    }
-
-    private void menuMonitorMouseExited(MouseEvent e) {
-        this.menu_monitor.setFont(new Font("segoe ui", Font.PLAIN, 14));
-        this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 }

@@ -1,15 +1,34 @@
 package com.bus.chat;
 
+/**
+ * A {@link Message} that carries a plain-text string payload.
+ *
+ * <p>Used to send chat text from one peer to another during a remote desktop session.</p>
+ */
 public class StringMessage extends Message {
-    private String content;
 
+    private static final long serialVersionUID = 1L;
+
+    private final String content;
+
+    /**
+     * Creates a new text message.
+     *
+     * @param sender  the hostname or display name of the sender
+     * @param content the text content to deliver
+     */
     public StringMessage(String sender, String content) {
-        this.setCurrentType(Message.STRING_MESSAGE);
+        super(Message.STRING_MESSAGE);
         this.setSender(sender);
         this.content = content;
     }
 
+    /**
+     * Returns the plain-text content of this message.
+     *
+     * @return the message text
+     */
     public String getContent() {
-        return this.content;
+        return content;
     }
 }

@@ -10,7 +10,7 @@ import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.SocketException;
-import java.util.Vector;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -18,160 +18,190 @@ import javax.swing.JPanel;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
+/**
+ * Panel that lets the user start and stop the local remote desktop server.
+ *
+ * <p>The user selects a local IP address (or binds to all interfaces with {@code 0.0.0.0}),
+ * sets a port and password, then clicks "Start listening". Incoming client connections are
+ * accepted on a background thread that loops while the server is active.</p>
+ *
+ * <p>The status label updates to reflect whether the server is stopped or listening.</p>
+ */
 public class ServerPanel extends JPanel implements Runnable {
-    public final static String STOPPED_FOREGROUND = "0xF50016";
-    public final static String LISTENING_FOREGROUND = "0x0042A7";
 
-    private CommonPanel main_panel;
-    private JLabel status_label;
-    private CommonLabel listen_label;
-    private CommonLabel stop_label;
+    /** Foreground colour for the "Stopped" status label. */
+    public static final String STOPPED_FOREGROUND = "0xF50016";
 
-    private CommonBus common_bus;
+    /** Foreground colour for the "Listening" status label. */
+    public static final String LISTENING_FOREGROUND = "0x0042A7";
 
-    private Thread listen_thread;
+    private static final String FONT_FAMILY = "segoe ui";
 
-    public ServerPanel(CommonBus common_bus) {
-        // TODO: style ClientPanel
+    private CommonPanel mainPanel;
+    private JLabel statusLabel;
+    private CommonLabel listenLabel;
+    private CommonLabel stopLabel;
+
+    private final CommonBus commonBus;
+    private Thread listenThread;
+
+    /**
+     * Creates the server panel.
+     *
+     * @param commonBus the shared transport facade used to start and stop the server
+     */
+    public ServerPanel(CommonBus commonBus) {
+        this.commonBus = commonBus;
+
         this.setLocation(0, MainFrame.HEIGHT_TASKBAR);
         this.setSize(MainFrame.WIDTH_FRAME, MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR);
         this.setBackground(Color.decode(ClientPanel.BACKGROUND));
         this.setLayout(null);
 
-        // TODO: class for handle events
-        this.common_bus = common_bus;
-
-        // TODO: add components
         this.initComponents();
     }
 
     private void initComponents() {
-        // TODO: constructor
-        this.main_panel = new CommonPanel();
-        this.status_label = new JLabel();
-        this.listen_label = new CommonLabel();
-        this.stop_label = new CommonLabel();
+        this.mainPanel   = new CommonPanel();
+        this.statusLabel = new JLabel();
+        this.listenLabel = new CommonLabel();
+        this.stopLabel   = new CommonLabel();
 
-        // TODO: add main_panel
-        this.add(this.main_panel);
+        this.add(this.mainPanel);
 
-        // TODO: add items for host_combo in main_panel
-        this.main_panel.getHostCombo().addPopupMenuListener(new PopupMenuListener() {
+        // Populate host combo with local IPv4 addresses whenever it drops down.
+        this.mainPanel.getHostCombo().addPopupMenuListener(new PopupMenuListener() {
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                 try {
-                    main_panel.getHostCombo().removeAllItems();
-                    main_panel.getHostCombo().addItem("0.0.0.0");
-                    Vector<String> ipv4_addresses = common_bus.getTcpServer().getAllIpv4AddressesOnLocal();
-                    for(String ipv4 : ipv4_addresses) {
-                        main_panel.getHostCombo().addItem(ipv4);
+                    mainPanel.getHostCombo().removeAllItems();
+                    mainPanel.getHostCombo().addItem("0.0.0.0");
+                    List<String> localAddresses = commonBus.getTcpServer().getLocalIpv4Addresses();
+                    for (String address : localAddresses) {
+                        mainPanel.getHostCombo().addItem(address);
                     }
+                } catch (SocketException ex) {
+                    System.err.println("Failed to enumerate local network interfaces: " + ex.getMessage());
                 }
-                catch(SocketException exception) {}
             }
 
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {}
+            @Override public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+            @Override public void popupMenuCanceled(PopupMenuEvent e) {}
         });
 
-        // TODO: style status_label
-        this.status_label.setText("Status: Stopped");
-        this.status_label.setBounds(30, 200, 150, 20);
-        this.status_label.setFont(new Font("segoe ui", Font.ITALIC | Font.BOLD, 13));
-        this.status_label.setForeground(Color.decode(ServerPanel.STOPPED_FOREGROUND));
-        this.main_panel.add(this.status_label);
+        // Status label — shows "Stopped" or "Listening…"
+        this.statusLabel.setText("Status: Stopped");
+        this.statusLabel.setBounds(30, 200, 150, 20);
+        this.statusLabel.setFont(new Font(FONT_FAMILY, Font.ITALIC | Font.BOLD, 13));
+        this.statusLabel.setForeground(Color.decode(STOPPED_FOREGROUND));
+        this.mainPanel.add(this.statusLabel);
 
-        // TODO: style listen_label
-        this.listen_label.setText("Start listening");
-        this.listen_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("listen_icon.png")));
-        this.listen_label.setBounds(50, 290, 150, 50);
-        this.listen_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.listen_label.setFont(new Font("segoe ui", Font.PLAIN, 15));
-        this.listen_label.addMouseListener(new MouseAdapter() {
+        // "Start listening" action label.
+        this.listenLabel.setText("Start listening");
+        this.listenLabel.setIcon(
+            new ImageIcon(getClass().getClassLoader().getResource("listen_icon.png"))
+        );
+        this.listenLabel.setBounds(50, 290, 150, 50);
+        this.listenLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
+        this.listenLabel.setFont(new Font(FONT_FAMILY, Font.PLAIN, 15));
+        this.listenLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                listenLabelMousePressed(e);
+                onListenClicked(e);
             }
         });
-        this.add(this.listen_label);
+        this.add(this.listenLabel);
 
-        // TODO: style stop_label
-        this.stop_label.setText("Stop listening");
-        this.stop_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("stop_icon.png")));
-        this.stop_label.setBounds(220, 290, 150, 50);
-        this.stop_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.stop_label.setFont(new Font("segoe ui", Font.PLAIN, 15));
-        this.stop_label.setEnabled(false);
-        this.stop_label.addMouseListener(new MouseAdapter() {
+        // "Stop listening" action label — initially disabled.
+        this.stopLabel.setText("Stop listening");
+        this.stopLabel.setIcon(
+            new ImageIcon(getClass().getClassLoader().getResource("stop_icon.png"))
+        );
+        this.stopLabel.setBounds(220, 290, 150, 50);
+        this.stopLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
+        this.stopLabel.setFont(new Font(FONT_FAMILY, Font.PLAIN, 15));
+        this.stopLabel.setEnabled(false);
+        this.stopLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                stopLabelMousePressed(e);
+                onStopClicked(e);
             }
         });
-        this.add(this.stop_label);
+        this.add(this.stopLabel);
     }
 
-    // TODO: handle events of listen_label
-    private void listenLabelMousePressed(MouseEvent e) {
-        if(e.getButton() == MouseEvent.BUTTON1 && this.listen_label.isEnabled()) {
-            try {
-                String host = this.main_panel.getHostCombo().getSelectedItem().toString().trim();
-                int port = Integer.parseInt(this.main_panel.getPortText().getText().trim());
-                String password = this.main_panel.getPassText().getText().trim();
-                this.common_bus.startListeningOnServer(host, port, password);
+    /**
+     * Handles the "Start listening" click: reads form values, starts the server, and
+     * launches the background accept loop.
+     */
+    private void onListenClicked(MouseEvent e) {
+        if (e.getButton() != MouseEvent.BUTTON1 || !this.listenLabel.isEnabled()) return;
 
-                // TODO: start listen_thread
-                this.listen_thread = new Thread(this);
-                this.listen_thread.setDaemon(true);
-                this.listen_thread.start();
+        try {
+            String host     = this.mainPanel.getHostCombo().getSelectedItem().toString().trim();
+            int    port     = Integer.parseInt(this.mainPanel.getPortTextField().getText().trim());
+            String password = this.mainPanel.getPasswordTextField().getText().trim();
 
-                // TODO: set status
-                this.main_panel.setEnabled(false);
-                this.listen_label.resetFont();
-                this.listen_label.setEnabled(false);
-                this.stop_label.setEnabled(true);
-                this.status_label.setText("Status: Listening...");
-                this.status_label.setForeground(Color.decode(ServerPanel.LISTENING_FOREGROUND));
-            }
-            catch(Exception exception) {
-                JOptionPane.showMessageDialog(this, "Can't start listening on server:\n" + exception.getMessage());
-            }
+            this.commonBus.startServer(host, port, password);
+
+            this.listenThread = new Thread(this);
+            this.listenThread.setDaemon(true);
+            this.listenThread.start();
+
+            this.mainPanel.setEnabled(false);
+            this.listenLabel.resetFont();
+            this.listenLabel.setEnabled(false);
+            this.stopLabel.setEnabled(true);
+            this.statusLabel.setText("Status: Listening...");
+            this.statusLabel.setForeground(Color.decode(LISTENING_FOREGROUND));
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Could not start server:\n" + ex.getMessage()
+            );
         }
     }
 
-    // TODO: handle events of stop_label
-    private void stopLabelMousePressed(MouseEvent e) {
-        if(e.getButton() == MouseEvent.BUTTON1 && this.stop_label.isEnabled()) {
-            try {
-                this.common_bus.stopListeningOnServer();
+    /**
+     * Handles the "Stop listening" click: stops the server and interrupts the accept thread.
+     */
+    private void onStopClicked(MouseEvent e) {
+        if (e.getButton() != MouseEvent.BUTTON1 || !this.stopLabel.isEnabled()) return;
 
-                // TODO: stop listen_thread
-                this.listen_thread.interrupt();
+        try {
+            this.commonBus.stopServer();
+            this.listenThread.interrupt();
 
-                // TODO: set status
-                this.main_panel.setEnabled(true);
-                this.stop_label.resetFont();
-                this.stop_label.setEnabled(false);
-                this.listen_label.setEnabled(true);
-                this.status_label.setText("Status: Stopped");
-                this.status_label.setForeground(Color.decode(ServerPanel.STOPPED_FOREGROUND));
-            }
-            catch(Exception exception) {
-                System.out.println(exception.getMessage());
-                JOptionPane.showMessageDialog(this, "Can't stop listening on server:\n" + exception.getMessage());
-            }
+            this.mainPanel.setEnabled(true);
+            this.stopLabel.resetFont();
+            this.stopLabel.setEnabled(false);
+            this.listenLabel.setEnabled(true);
+            this.statusLabel.setText("Status: Stopped");
+            this.statusLabel.setForeground(Color.decode(STOPPED_FOREGROUND));
+        } catch (Exception ex) {
+            System.err.println("Error stopping server: " + ex.getMessage());
+            JOptionPane.showMessageDialog(
+                this,
+                "Could not stop server:\n" + ex.getMessage()
+            );
         }
     }
 
+    /**
+     * Background accept loop — blocks on {@link com.bus.tcp.TcpServer#acceptNextClient()}
+     * and loops while the server is listening. Exceptions from individual accept attempts
+     * (e.g., socket closed on stop) are expected and silently continue the loop.
+     */
     @Override
     public void run() {
-        while(this.common_bus.getTcpServer().isListening()) {
+        while (this.commonBus.isServerListening()) {
             try {
-                this.common_bus.getTcpServer().waitingConnectionFromClient();
+                this.commonBus.getTcpServer().acceptNextClient();
+            } catch (Exception e) {
+                // A closed socket throws when stopServer() is called — this is expected.
+                if (!this.commonBus.isServerListening()) break;
+                System.err.println("Error accepting client connection: " + e.getMessage());
             }
-            catch(Exception e) {}
         }
     }
 }

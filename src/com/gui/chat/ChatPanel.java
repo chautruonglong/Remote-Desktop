@@ -20,335 +20,458 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 
+/**
+ * Panel for a single peer-to-peer chat session over an established {@link ChatBus}.
+ *
+ * <p>Displays an incoming/outgoing message history, a text input area, and send/file buttons.
+ * A background daemon thread continuously reads incoming {@link Message}s from the bus and
+ * appends them to the history panel.</p>
+ *
+ * <p>When the connection drops (detected by the receive thread catching an exception), all
+ * associated UI components are cleaned up and the parent {@link MainChatPanel} is notified.</p>
+ *
+ * <p>The local hostname is resolved once at construction and cached to avoid repeated
+ * blocking DNS lookups during message sends.</p>
+ *
+ * <p>File sends are limited to {@value #MAX_FILE_SIZE_BYTES} bytes. Files are read and
+ * transferred on a daemon thread so the EDT is not blocked.</p>
+ */
 public class ChatPanel extends JPanel implements Runnable {
-    public final static String CONTENT_BACKGROUND = "0xFFFFFF";
-    public final static int MAX_LENGTH_LINE = 20;
 
-    private JPanel content_panel;
-    private JScrollPane scroll_panel;
-    private JTextArea message_text;
-    private JScrollPane scroll_text;
-    private CommonLabel send_label;
-    private CommonLabel file_label;
-    private JLabel loader_label;
+    /** Background colour for the message history area. */
+    public static final String CONTENT_BACKGROUND = "0xFFFFFF";
 
-    private GroupLayout layout;
-    private GroupLayout.ParallelGroup h_parallel;
-    private GroupLayout.SequentialGroup v_sequential;
+    /** Maximum characters per line before wrapping in the history display. */
+    public static final int MAX_LINE_LENGTH = 20;
 
-    private MainChatPanel root;
+    /** Maximum file size (30 MB) allowed for file transfers. */
+    public static final long MAX_FILE_SIZE_BYTES = 30L * 1024 * 1024;
 
-    private CommonBus common_bus;
-    private ChatBus chat_bus;
+    private static final String FONT_FAMILY_MONO = "consolas";
+    private static final String FONT_FAMILY_UI   = "segoe ui";
 
-    private Thread recv_thread;
+    private JPanel contentPanel;
+    private JScrollPane scrollPanel;
+    private JTextArea messageTextArea;
+    private JScrollPane scrollText;
+    private CommonLabel sendLabel;
+    private CommonLabel fileLabel;
+    private JLabel loaderLabel;
 
-    public ChatPanel(MainChatPanel root, CommonBus common_bus, ChatBus chat_bus) {
-        // TODO: style ChatPanel
+    private GroupLayout contentLayout;
+    private GroupLayout.ParallelGroup horizontalGroup;
+    private GroupLayout.SequentialGroup verticalGroup;
+
+    private final MainChatPanel parentPanel;
+    private final CommonBus commonBus;
+    private final ChatBus chatBus;
+
+    /** Cached local hostname — resolved once to avoid repeated blocking DNS calls. */
+    private final String localHostName;
+
+    /** The menu item in the connections pop-up that links to this panel. */
+    private ConnectionItem connectionItem;
+
+    private final Thread receiveThread;
+
+    /**
+     * Creates a new {@code ChatPanel} for the given connection.
+     *
+     * @param parentPanel the {@link MainChatPanel} that owns this session
+     * @param commonBus   the shared transport facade used to check connection state
+     * @param chatBus     the communication bus for this session
+     */
+    public ChatPanel(MainChatPanel parentPanel, CommonBus commonBus, ChatBus chatBus) {
+        this.parentPanel = parentPanel;
+        this.commonBus   = commonBus;
+        this.chatBus     = chatBus;
+        this.localHostName = resolveLocalHostName();
+
         this.setLocation(0, MainFrame.HEIGHT_TASKBAR - 42);
         this.setSize(MainFrame.WIDTH_FRAME, MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR);
         this.setBackground(Color.decode(ClientPanel.BACKGROUND));
         this.setLayout(null);
 
-        // TODO: class for handle events
-        this.common_bus = common_bus;
-        this.chat_bus = chat_bus;
-        this.root = root;
-
-        // TODO: add components
         this.initComponents();
 
-        // TODO: start recv_thread
-        this.recv_thread = new Thread(this);
-        this.recv_thread.setDaemon(true);
-        this.recv_thread.start();
+        this.receiveThread = new Thread(this);
+        this.receiveThread.setDaemon(true);
+        this.receiveThread.start();
     }
 
     private void initComponents() {
-        // TODO: constructor
-        this.content_panel = new JPanel();
-        this.scroll_panel = new JScrollPane();
-        this.message_text = new JTextArea();
-        this.scroll_text = new JScrollPane();
-        this.send_label = new CommonLabel();
-        this.file_label = new CommonLabel();
-        this.loader_label = new JLabel();
+        this.contentPanel  = new JPanel();
+        this.scrollPanel   = new JScrollPane();
+        this.messageTextArea = new JTextArea();
+        this.scrollText    = new JScrollPane();
+        this.sendLabel     = new CommonLabel();
+        this.fileLabel     = new CommonLabel();
+        this.loaderLabel   = new JLabel();
 
-        // TODO: create layout for content_panel
-        this.layout = new GroupLayout(this.content_panel);
-        this.h_parallel = this.layout.createParallelGroup();
-        this.v_sequential = this.layout.createSequentialGroup();
-        this.layout.setHorizontalGroup(h_parallel);
-        this.layout.setVerticalGroup(v_sequential);
+        // Message history scroll area.
+        this.contentLayout   = new GroupLayout(this.contentPanel);
+        this.horizontalGroup = this.contentLayout.createParallelGroup();
+        this.verticalGroup   = this.contentLayout.createSequentialGroup();
+        this.contentLayout.setHorizontalGroup(this.horizontalGroup);
+        this.contentLayout.setVerticalGroup(this.verticalGroup);
 
-        // TODO: style content_panel;
-        this.content_panel.setBackground(Color.decode(ChatPanel.CONTENT_BACKGROUND));
-        this.content_panel.setLayout(layout);
+        this.contentPanel.setBackground(Color.decode(CONTENT_BACKGROUND));
+        this.contentPanel.setLayout(this.contentLayout);
 
-        // TODO: style scroll_panel
-        this.scroll_panel.setViewportView(this.content_panel);
-        this.scroll_panel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        this.scroll_panel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        this.scroll_panel.setBounds(10, 15, MainFrame.WIDTH_FRAME - 20, MainFrame.HEIGHT_FRAME - 150);
-        this.add(this.scroll_panel);
+        this.scrollPanel.setViewportView(this.contentPanel);
+        this.scrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        this.scrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        this.scrollPanel.setBounds(10, 15, MainFrame.WIDTH_FRAME - 20, MainFrame.HEIGHT_FRAME - 150);
+        this.add(this.scrollPanel);
 
-        // TODO: style message_text
-        this.message_text.setFont(new Font("consolas", Font.PLAIN, 14));
-        this.message_text.setLineWrap(true);
-        this.message_text.getDocument().putProperty("filterNewlines", Boolean.TRUE);
-        this.message_text.addKeyListener(new KeyAdapter() {
+        // Text input.
+        this.messageTextArea.setFont(new Font(FONT_FAMILY_MONO, Font.PLAIN, 14));
+        this.messageTextArea.setLineWrap(true);
+        this.messageTextArea.getDocument().putProperty("filterNewlines", Boolean.TRUE);
+        this.messageTextArea.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                messageTextKeyPressed(e);
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) sendMessage();
             }
         });
 
-        // TODO: style scroll_text
-        this.scroll_text.setViewportView(this.message_text);
-        this.scroll_text.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        this.scroll_text.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        this.scroll_text = new JScrollPane(this.message_text);
-        this.scroll_text.setBounds(30, scroll_panel.getHeight() + 20, MainFrame.WIDTH_FRAME - 150, MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR - scroll_panel.getHeight() - 30);
-        this.add(this.scroll_text);
+        this.scrollText = new JScrollPane(this.messageTextArea);
+        this.scrollText.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        this.scrollText.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        this.scrollText.setBounds(
+            30,
+            this.scrollPanel.getHeight() + 20,
+            MainFrame.WIDTH_FRAME - 150,
+            MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR - this.scrollPanel.getHeight() - 30
+        );
+        this.add(this.scrollText);
 
-        // TODO: style send_label
-        this.send_label.setText("Send");
-        this.send_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("send_icon.png")));
-        this.send_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.send_label.setFont(new Font("segoe ui", Font.PLAIN, 13));
-        this.send_label.setBounds(this.scroll_text.getWidth() + 50, this.scroll_text.getY(), 80, 30);
-        this.send_label.addMouseListener(new MouseAdapter() {
+        // "Send" button.
+        this.sendLabel.setText("Send");
+        this.sendLabel.setIcon(new ImageIcon(getClass().getClassLoader().getResource("send_icon.png")));
+        this.sendLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
+        this.sendLabel.setFont(new Font(FONT_FAMILY_UI, Font.PLAIN, 13));
+        this.sendLabel.setBounds(this.scrollText.getWidth() + 50, this.scrollText.getY(), 80, 30);
+        this.sendLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                sendLabelMousePressed(e);
+                if (e.getButton() == MouseEvent.BUTTON1 && sendLabel.isEnabled()) sendMessage();
             }
         });
-        this.add(this.send_label);
+        this.add(this.sendLabel);
 
-        // TODO: style file_label
-        this.file_label.setText("File");
-        this.file_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("file_icon.png")));
-        this.file_label.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.file_label.setFont(new Font("segoe ui", Font.PLAIN, 13));
-        this.file_label.setBounds(this.scroll_text.getWidth() + 50, this.scroll_text.getY() + 40, 60, 30);
-        this.file_label.addMouseListener(new MouseAdapter() {
+        // "File" button.
+        this.fileLabel.setText("File");
+        this.fileLabel.setIcon(new ImageIcon(getClass().getClassLoader().getResource("file_icon.png")));
+        this.fileLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
+        this.fileLabel.setFont(new Font(FONT_FAMILY_UI, Font.PLAIN, 13));
+        this.fileLabel.setBounds(this.scrollText.getWidth() + 50, this.scrollText.getY() + 40, 60, 30);
+        this.fileLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 try {
-                    fileLabelMousePressed(e);
-                }
-                catch(IOException exception) {
-                    JOptionPane.showMessageDialog(null, "Can't send message:\n" + exception.getMessage());
+                    onFileLabelClicked(e);
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(null, "Could not send file:\n" + ex.getMessage());
                 }
             }
         });
-        this.add(this.file_label);
+        this.add(this.fileLabel);
 
-        // TODO: style loader_label
-        this.loader_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("loader_icon2.gif")));
-        this.loader_label.setBounds(this.file_label.getX() + 60, this.file_label.getY() + 7, 16, 16);
-        this.loader_label.setVisible(false);
-        this.add(this.loader_label);
+        // Loading spinner.
+        this.loaderLabel.setIcon(
+            new ImageIcon(getClass().getClassLoader().getResource("loader_icon2.gif"))
+        );
+        this.loaderLabel.setBounds(this.fileLabel.getX() + 60, this.fileLabel.getY() + 7, 16, 16);
+        this.loaderLabel.setVisible(false);
+        this.add(this.loaderLabel);
     }
 
-    public String getHostName() {
-        return this.chat_bus.getSocket().getInetAddress().getHostName();
+    /**
+     * Returns the remote host's display name, used as the label for the connection menu item.
+     *
+     * @return the remote hostname
+     */
+    public String getRemoteHostName() {
+        return this.chatBus.getSocket().getInetAddress().getHostName();
     }
 
+    /**
+     * Stores the {@link ConnectionItem} associated with this panel so it can be removed
+     * from the pop-up menu when the connection closes.
+     *
+     * @param item the menu item for this session
+     */
+    public void setConnectionItem(ConnectionItem item) {
+        this.connectionItem = item;
+    }
+
+    /**
+     * Enables or disables the send and file action controls.
+     *
+     * @param enabled {@code true} to enable, {@code false} to disable
+     */
     @Override
-    public void setEnabled(boolean b) {
-        this.message_text.setEnabled(b);
-        this.send_label.setEnabled(b);
-        this.file_label.setEnabled(b);
+    public void setEnabled(boolean enabled) {
+        this.messageTextArea.setEnabled(enabled);
+        this.sendLabel.setEnabled(enabled);
+        this.fileLabel.setEnabled(enabled);
     }
 
+    /**
+     * Scrolls the history to the bottom when this panel becomes visible.
+     *
+     * @param visible {@code true} to show the panel
+     */
     @Override
-    public void setVisible(boolean b) {
-        // TODO: move scroll to bottom when show up
-        this.scroll_panel.getViewport().setViewPosition(new Point(0, this.scroll_panel.getVerticalScrollBar().getMaximum()));
-        this.scroll_panel.getViewport().setViewPosition(new Point(0, this.scroll_panel.getVerticalScrollBar().getMaximum()));
-        super.setVisible(b);
+    public void setVisible(boolean visible) {
+        scrollToBottom();
+        super.setVisible(visible);
     }
 
-    private void messageTextKeyPressed(KeyEvent e) {
-        if(e.getKeyCode() == KeyEvent.VK_ENTER) {
-            this.sendMessage();
-        }
-    }
+    // -------------------------------------------------------------------------
+    // Message sending
+    // -------------------------------------------------------------------------
 
-    private void sendLabelMousePressed(MouseEvent e) {
-        if(e.getButton() == MouseEvent.BUTTON1 && this.send_label.isEnabled()) {
-            this.sendMessage();
-        }
-    }
-
-    // TODO: send a string message
+    /**
+     * Reads the text area content and sends it as a {@link StringMessage} to the peer.
+     * The text area is cleared on success. Empty/blank inputs are ignored.
+     */
     private void sendMessage() {
         try {
-            String content = this.message_text.getText();
-            if(!content.trim().equals("")) {
-                StringMessage str_message = new StringMessage(InetAddress.getLocalHost().getHostName(), content);
-                this.chat_bus.sendMessage(str_message);
-                int gap = this.scroll_panel.getWidth() - 180;
+            String content = this.messageTextArea.getText();
+            if (content.trim().isEmpty()) return;
 
-                JLabel label = new JLabel("You send a message:" + content);
-                label.setFont(new Font("consolas", Font.PLAIN, 14));
-                label.setForeground(Color.BLACK);
-                this.addMessageToPanel(label, gap, "green");
-            }
-            this.message_text.setText("");
-        }
-        catch(Exception exception) {
-            JOptionPane.showMessageDialog(this, "Can't send message:\n" + exception.getMessage());
-        }
-    }
+            StringMessage message = new StringMessage(this.localHostName, content);
+            this.chatBus.sendMessage(message);
 
-    // TODO: send a file message
-    private void fileLabelMousePressed(MouseEvent e) throws IOException {
-        if(e.getButton() == MouseEvent.BUTTON1 && this.file_label.isEnabled()) {
-            JFileChooser file_chooser = new JFileChooser();
-            file_chooser.setCurrentDirectory(FileSystemView.getFileSystemView().getHomeDirectory());
-            file_chooser.showDialog(this, "Send");
-
-            File dir = file_chooser.getSelectedFile();
-            if(dir != null) {
-                if(dir.length() > 30 * 1024 * 1024) throw new IOException("File too large, please send file < 30MB");
-
-                this.loader_label.setVisible(true);
-                this.setEnabled(false);
-                Thread send_thread = new Thread(() -> {
-                    try {
-                        // TODO: send file in new thread
-                        FileInputStream fis = new FileInputStream(dir);
-                        FileMessage file_message = new FileMessage(InetAddress.getLocalHost().getHostName(), dir.getName(), dir.length(), fis.readAllBytes());
-                        this.chat_bus.sendMessage(file_message);
-
-                        int gap = this.scroll_panel.getWidth() - 180;
-                        file_message.setSender("You");
-                        FileLabel file_label = new FileLabel(file_message);
-                        this.addMessageToPanel(file_label, gap, "green");
-
-                        this.setEnabled(true);
-                        this.loader_label.setVisible(false);
-                    }
-                    catch(IOException exception) {
-                        this.setEnabled(false);
-                        this.loader_label.setVisible(false);
-                        JOptionPane.showMessageDialog(null, "Can't send file:\n" + exception.getMessage());
-                    }
-                });
-                send_thread.setDaemon(true);
-                send_thread.start();
-            }
+            int rightGap = this.scrollPanel.getWidth() - 180;
+            JLabel label = new JLabel("You sent a message:" + content);
+            label.setFont(new Font(FONT_FAMILY_MONO, Font.PLAIN, 14));
+            label.setForeground(Color.BLACK);
+            addMessageToPanel(label, rightGap, "green");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Could not send message:\n" + ex.getMessage());
+        } finally {
+            this.messageTextArea.setText("");
         }
     }
 
-    // TODO: show message in panel
-    public void addMessageToPanel(JLabel label, int gap, String color_header) {
+    /**
+     * Opens a file chooser, validates the selected file's size, then sends it on a
+     * background thread as a {@link FileMessage}. Uses try-with-resources to prevent leaks.
+     *
+     * @throws IOException if the file is too large
+     */
+    private void onFileLabelClicked(MouseEvent e) throws IOException {
+        if (e.getButton() != MouseEvent.BUTTON1 || !this.fileLabel.isEnabled()) return;
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(FileSystemView.getFileSystemView().getHomeDirectory());
+        fileChooser.showDialog(this, "Send");
+
+        File selectedFile = fileChooser.getSelectedFile();
+        if (selectedFile == null) return;
+        if (selectedFile.length() > MAX_FILE_SIZE_BYTES) {
+            throw new IOException("File too large — maximum allowed size is 30 MB");
+        }
+
+        this.loaderLabel.setVisible(true);
+        this.setEnabled(false);
+
+        Thread sendThread = new Thread(() -> {
+            try (FileInputStream fis = new FileInputStream(selectedFile)) {
+                FileMessage fileMessage = new FileMessage(
+                    this.localHostName,
+                    selectedFile.getName(),
+                    selectedFile.length(),
+                    fis.readAllBytes()
+                );
+                this.chatBus.sendMessage(fileMessage);
+
+                int rightGap = this.scrollPanel.getWidth() - 180;
+                fileMessage.setSender("You");
+                FileLabel fileLabel = new FileLabel(fileMessage);
+                addMessageToPanel(fileLabel, rightGap, "green");
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, "Could not send file:\n" + ex.getMessage());
+            } finally {
+                this.setEnabled(true);
+                this.loaderLabel.setVisible(false);
+            }
+        });
+        sendThread.setDaemon(true);
+        sendThread.start();
+    }
+
+    // -------------------------------------------------------------------------
+    // Message history rendering
+    // -------------------------------------------------------------------------
+
+    /**
+     * Adds a message label to the scrollable history panel on the EDT.
+     *
+     * <p>The label text is formatted with a coloured header line and line-wrapped body.
+     * After adding, the scroll position is set to the bottom so the newest message is
+     * always visible.</p>
+     *
+     * @param label       the label to add (may be a plain {@link JLabel} or a {@link FileLabel})
+     * @param rightGap    horizontal gap from the right (larger for sent, 0 for received)
+     * @param headerColor HTML colour string for the sender header (e.g., {@code "green"} or {@code "blue"})
+     */
+    public void addMessageToPanel(JLabel label, int rightGap, String headerColor) {
         EventQueue.invokeLater(() -> {
-            label.setText(this.handleMessage(label.getText(), color_header));
+            label.setText(formatMessage(label.getText(), headerColor));
 
-            this.h_parallel.addGroup(
-                this.layout.createSequentialGroup()
-                    .addContainerGap(gap, gap)
+            this.horizontalGroup.addGroup(
+                this.contentLayout.createSequentialGroup()
+                    .addContainerGap(rightGap, rightGap)
                     .addComponent(label)
             );
-            this.v_sequential.addComponent(label).addGap(10, 10, 10);
-            this.scroll_panel.revalidate();
+            this.verticalGroup.addComponent(label).addGap(10, 10, 10);
+            this.scrollPanel.revalidate();
 
-            // TODO: move scroll to bottom
-            this.scroll_panel.getViewport().setViewPosition(new Point(0, this.scroll_panel.getVerticalScrollBar().getMaximum()));
-            this.scroll_panel.getViewport().setViewPosition(new Point(0, this.scroll_panel.getVerticalScrollBar().getMaximum()));
+            scrollToBottom();
         });
     }
 
-    // TODO: format message
-    private String handleMessage(String message, String color_header) {
-        String formatted_message = "<html>";
-        formatted_message += this.getHeaderName(message, color_header);
-        formatted_message += this.multiLinesString(message);
-        formatted_message += "</html>";
-        return formatted_message;
+    /**
+     * Wraps a raw message string in HTML with a coloured sender header and line-broken body.
+     *
+     * @param rawText     the original label text
+     * @param headerColor the HTML colour name for the header
+     * @return an HTML string suitable for use in a {@link JLabel}
+     */
+    private String formatMessage(String rawText, String headerColor) {
+        return "<html>" + buildHeader(rawText, headerColor) + buildWrappedBody(rawText) + "</html>";
     }
 
-    private String getHeaderName(String message, String color_header) {
-        if(message.contains(":")) {
-            String header_name = "<font color='" + color_header + "'>";
-            header_name += message.substring(0, message.indexOf(':') + 1) + "</font><br>";
-            return header_name;
+    /**
+     * Extracts the portion of {@code text} up to and including the first colon, wraps it
+     * in a coloured HTML {@code <font>} tag, and appends a line break.
+     * Returns an empty string if no colon is present.
+     */
+    private String buildHeader(String text, String color) {
+        if (!text.contains(":")) return "";
+        String header = text.substring(0, text.indexOf(':') + 1);
+        return "<font color='" + color + "'>" + header + "</font><br>";
+    }
+
+    /**
+     * Extracts the body portion of {@code text} (after the first colon) and inserts
+     * {@code <br>} tags every {@link #MAX_LINE_LENGTH} characters for readability.
+     */
+    private String buildWrappedBody(String text) {
+        String body = text.substring(text.indexOf(':') + 1);
+        if (body.length() <= MAX_LINE_LENGTH) return body;
+
+        StringBuilder wrapped = new StringBuilder();
+        int index = 0;
+        while (index + MAX_LINE_LENGTH < body.length()) {
+            wrapped.append(body, index, index + MAX_LINE_LENGTH).append("<br>");
+            index += MAX_LINE_LENGTH;
         }
-        return "";
+        wrapped.append(body.substring(index));
+        return wrapped.toString();
     }
 
-    private String multiLinesString(String message) {
-        message = message.substring(message.indexOf(':') + 1);
-        if(message.length() > ChatPanel.MAX_LENGTH_LINE) {
-            int loops = message.length() / ChatPanel.MAX_LENGTH_LINE;
-            int index = 0;
-            String content = "";
-            for(int i = 0; i < loops; ++i) {
-                content += message.substring(index, index + ChatPanel.MAX_LENGTH_LINE) + "<br>";
-                index += ChatPanel.MAX_LENGTH_LINE;
-            }
-            content += message.substring(index);
-            return content;
-        }
-        return message;
+    /**
+     * Scrolls the message history to the bottom. Called twice in succession because Swing's
+     * layout may not have completed the first time, and the second call ensures the scroll
+     * bar maximum is up-to-date.
+     */
+    private void scrollToBottom() {
+        this.scrollPanel.getViewport().setViewPosition(
+            new Point(0, this.scrollPanel.getVerticalScrollBar().getMaximum())
+        );
+        this.scrollPanel.getViewport().setViewPosition(
+            new Point(0, this.scrollPanel.getVerticalScrollBar().getMaximum())
+        );
     }
 
-    // TODO: recv messages
+    // -------------------------------------------------------------------------
+    // Receive loop
+    // -------------------------------------------------------------------------
+
+    /**
+     * Background receive loop — blocks on {@link ChatBus#receiveMessage()} and dispatches
+     * each received message to the history panel.
+     *
+     * <p>If neither server nor client is active, the thread sleeps 1 second between checks
+     * to avoid busy-waiting. When an exception is thrown (connection dropped), the session
+     * is cleaned up and the loop exits.</p>
+     */
     @Override
     public void run() {
-        while(true) {
+        while (true) {
             try {
-                if(this.common_bus.getTcpServer().isHasPartner() || this.common_bus.getTcpClient().isConnectedServer()) {
-                    Message obj_message = this.chat_bus.recvMessage();
-                    if(obj_message != null) {
-                        if(obj_message.getCurrentType() == Message.STRING_MESSAGE) {
-                            StringMessage str_message = (StringMessage) obj_message;
-
-                            JLabel label = new JLabel(str_message.getSender() + " send a message:" + str_message.getContent());
-                            label.setFont(new Font("consolas", Font.PLAIN, 14));
-                            label.setForeground(Color.BLACK);
-                            this.addMessageToPanel(label, 0, "blue");
-                        }
-                        else if(obj_message.getCurrentType() == Message.FILE_MESSAGE) {
-                            FileMessage file_message = (FileMessage) obj_message;
-                            FileLabel file_label = new FileLabel(file_message);
-                            this.addMessageToPanel(file_label, 0, "blue");
-                        }
+                if (this.commonBus.hasConnectedClient() || this.commonBus.isClientConnected()) {
+                    Message message = this.chatBus.receiveMessage();
+                    if (message instanceof StringMessage) {
+                        StringMessage stringMessage = (StringMessage) message;
+                        JLabel label = new JLabel(
+                            stringMessage.getSender() + " sent a message:" + stringMessage.getContent()
+                        );
+                        label.setFont(new Font(FONT_FAMILY_MONO, Font.PLAIN, 14));
+                        label.setForeground(Color.BLACK);
+                        addMessageToPanel(label, 0, "blue");
+                    } else if (message instanceof FileMessage) {
+                        FileMessage fileMessage = (FileMessage) message;
+                        addMessageToPanel(new FileLabel(fileMessage), 0, "blue");
                     }
-                    continue; // TODO: pass sleep if connected
+                } else {
+                    Thread.sleep(1000);
                 }
-                Thread.sleep(1000); // TODO: update status of client and server
-            }
-            catch(Exception e) {
-                this.common_bus.getTcpServer().setHasPartner(false);
-                this.common_bus.getTcpClient().setConnectedServer(false);
-
-                this.root.remove(this);
-                this.root.getPopupMenu().remove(item);
-                this.root.addCount(-1);
-                this.root.getChatPanels().remove(this);
-                this.root.validate();
-                this.root.revalidate();
-                this.root.repaint();
-
-                try {
-                    this.chat_bus.getSocket().close();
-                }
-                catch(Exception exception) {}
-
+            } catch (Exception e) {
+                handleDisconnect();
                 break;
             }
         }
     }
 
-    private ConnectionItem item;
-    public void setConnectionItem(ConnectionItem item) {
-        this.item = item;
+    /**
+     * Cleans up after the connection drops: resets transport state, removes this panel and
+     * its menu item from the parent, and closes the underlying socket.
+     */
+    private void handleDisconnect() {
+        this.commonBus.getTcpServer().setHasConnectedClient(false);
+        this.commonBus.getTcpClient().setConnected(false);
+
+        this.parentPanel.remove(this);
+        this.parentPanel.getPopupMenu().remove(this.connectionItem);
+        this.parentPanel.adjustConnectionCount(-1);
+        this.parentPanel.getChatPanels().remove(this);
+        this.parentPanel.validate();
+        this.parentPanel.revalidate();
+        this.parentPanel.repaint();
+
+        try {
+            this.chatBus.getSocket().close();
+        } catch (IOException ex) {
+            System.err.println("Error closing chat socket: " + ex.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Utility
+    // -------------------------------------------------------------------------
+
+    /**
+     * Resolves the local machine's hostname once at startup. Falls back to
+     * {@code "localhost"} if the lookup fails.
+     *
+     * @return the local hostname string
+     */
+    private static String resolveLocalHostName() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            System.err.println("Could not resolve local hostname, using 'localhost': " + e.getMessage());
+            return "localhost";
+        }
     }
 }

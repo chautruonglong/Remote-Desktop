@@ -1,96 +1,119 @@
 package com.gui.remote;
 
+import com.model.ComputerInfo;
+import com.model.DriveInfo;
 import java.awt.Color;
-import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import javax.swing.*;
 
+/**
+ * Scrollable panel that displays the remote computer's operating system name and disk drives.
+ *
+ * <p>Updated periodically via {@link #updateInfo(ComputerInfo)} by the
+ * {@link HardwareDialog} background thread. Each update rebuilds all child components
+ * on the EDT to reflect the latest drive usage data.</p>
+ *
+ * <p>Uses absolute positioning ({@code null} layout) with explicit {@link java.awt.Rectangle}
+ * bounds on each child component. The panel's preferred size is recalculated on every update
+ * so the parent {@link JScrollPane} can scroll correctly.</p>
+ *
+ * <p>Drive usage bars turn red when a drive is more than 90% full.</p>
+ */
 public class DrivesInfoPanel extends JPanel {
-    public final static String FOREGROUND = "0x26A0DA";
 
-    private GroupLayout group_layout;
-    private GroupLayout.ParallelGroup h_parallel;
-    private GroupLayout.ParallelGroup v_parallel;
+    /** Hex colour for drive progress bars when usage is below the warning threshold. */
+    public static final String PROGRESS_FOREGROUND = "0x26A0DA";
 
+    /** Usage ratio above which the progress bar switches to red. */
+    private static final double WARNING_THRESHOLD = 0.9;
+
+    private static final int PADDING          = 30;
+    private static final int OS_LABEL_HEIGHT  = 30;
+    private static final int ROW_HEIGHT       = 60;
+    private static final int PROGRESS_Y_OFFSET = 10;
+    private static final int PROGRESS_WIDTH   = 170;
+    private static final int PROGRESS_HEIGHT  = 15;
+    private static final int DRIVE_LABEL_WIDTH  = 200;
+    private static final int DRIVE_LABEL_HEIGHT = 50;
+
+    /**
+     * Creates an empty drives-info panel with a white background.
+     */
     public DrivesInfoPanel() {
-        this.setSize(HardwareDialog.WIDTH_DIALOG, HardwareDialog.HEIGHT_PANEL);
         this.setBackground(Color.WHITE);
-
-        // TODO: add components
-        this.initComponents();
+        this.setLayout(null);
     }
 
-    private void initComponents() {
-        // TODO: constructor
-        this.group_layout = new GroupLayout(this);
-        this.v_parallel = this.group_layout.createParallelGroup();
-        this.h_parallel = this.group_layout.createParallelGroup();
-        this.group_layout.setHorizontalGroup(this.h_parallel);
-        this.group_layout.setVerticalGroup(this.v_parallel);
-        this.setLayout(this.group_layout);
-    }
-
-    public void updateInfo(ComputerInfo pc_info) {
+    /**
+     * Rebuilds the panel contents to reflect the given computer information snapshot.
+     *
+     * <p>This method posts all component work to the EDT via {@link EventQueue#invokeLater}
+     * so it is safe to call from any thread.</p>
+     *
+     * @param pcInfo the latest snapshot of the remote machine's OS and drives
+     */
+    public void updateInfo(ComputerInfo pcInfo) {
         EventQueue.invokeLater(() -> {
             this.removeAll();
 
-            // TODO: style os_name_label
-            JLabel os_name_label = new JLabel();
-            os_name_label.setText("Operating System: " + pc_info.getOsName());
-            os_name_label.setFont(new Font("segoe ui", Font.BOLD | Font.ITALIC, 17));
-            os_name_label.setForeground(Color.BLUE);
-            os_name_label.setBounds(30, 0, HardwareDialog.WIDTH_DIALOG - 100, 30);
-            this.add(os_name_label);
+            int y = 5;
 
-            // TODO: style drives
-            int y = os_name_label.getY() + os_name_label.getHeight() + 10;
-            for(DriveInfo drive : pc_info.getDrives()) {
-                long total_space = drive.getTotalSpace();
-                long usage_space = total_space - drive.getFreeSpace();
+            // OS name label.
+            JLabel osLabel = new JLabel("Operating System: " + pcInfo.getOsName());
+            osLabel.setFont(new Font("segoe ui", Font.BOLD | Font.ITALIC, 17));
+            osLabel.setForeground(Color.BLUE);
+            osLabel.setBounds(PADDING, y, HardwareDialog.WIDTH_DIALOG - 100, OS_LABEL_HEIGHT);
+            this.add(osLabel);
+            y += OS_LABEL_HEIGHT + 10;
 
-                // TODO: add name
-                String text =
+            // One row per drive.
+            for (DriveInfo drive : pcInfo.getDrives()) {
+                long totalGb = drive.getTotalSpaceGb();
+                long usedGb  = totalGb - drive.getFreeSpaceGb();
+
+                // Drive name + usage text label with HDD icon.
+                String driveText =
                     "<html>" +
-                        "<font color=\"blue\">" + drive.getName() + "<br></font>" +
-                        " (Used " + usage_space + " GB of " + total_space + " GB)" +
-                        "</html>";
-                JLabel drive_label = new JLabel(text);
-                drive_label.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("hdd_icon.png")));
-                drive_label.setFont(new Font("segoe ui", Font.PLAIN, 12));
-                drive_label.setBounds(60, y, 200, 50);
-                drive_label.setIconTextGap(20);
-                this.add(drive_label);
+                    "<font color=\"blue\">" + drive.getName() + "<br></font>" +
+                    " (Used " + usedGb + " GB of " + totalGb + " GB)" +
+                    "</html>";
+                JLabel driveLabel = new JLabel(driveText);
+                driveLabel.setIcon(
+                    new ImageIcon(getClass().getClassLoader().getResource("hdd_icon.png"))
+                );
+                driveLabel.setFont(new Font("segoe ui", Font.PLAIN, 12));
+                driveLabel.setIconTextGap(20);
+                driveLabel.setBounds(PADDING + 30, y, DRIVE_LABEL_WIDTH, DRIVE_LABEL_HEIGHT);
+                this.add(driveLabel);
 
-                // TODO: add usage
-                JProgressBar progress = new JProgressBar();
-                progress.setMaximum((int) total_space);
-                progress.setValue((int) usage_space);
-                progress.setBounds(drive_label.getX() + drive_label.getWidth() + 20, y + 10, 170, 15);
-                progress.setForeground(Color.decode(DrivesInfoPanel.FOREGROUND));
-                if((double) usage_space / total_space >= 0.9) progress.setForeground(Color.RED);
-                this.add(progress);
+                // Usage progress bar — red if > 90% full.
+                JProgressBar progressBar = new JProgressBar();
+                progressBar.setMaximum((int) totalGb);
+                progressBar.setValue((int) usedGb);
+                progressBar.setForeground(
+                    (totalGb > 0 && (double) usedGb / totalGb >= WARNING_THRESHOLD)
+                        ? Color.RED
+                        : Color.decode(PROGRESS_FOREGROUND)
+                );
+                progressBar.setBounds(
+                    PADDING + 30 + DRIVE_LABEL_WIDTH + 20,
+                    y + PROGRESS_Y_OFFSET,
+                    PROGRESS_WIDTH,
+                    PROGRESS_HEIGHT
+                );
+                this.add(progressBar);
 
-                y += drive_label.getHeight() + 10;
+                y += DRIVE_LABEL_HEIGHT + 10;
             }
+
+            // Update preferred size so the parent scroll pane knows the full content height.
+            this.setPreferredSize(new Dimension(HardwareDialog.WIDTH_DIALOG, y + 10));
 
             this.validate();
             this.revalidate();
             this.repaint();
         });
-    }
-
-    @Override
-    public Component add(Component comp) {
-        super.add(comp);
-        this.h_parallel.addGroup(this.group_layout.createSequentialGroup()
-            .addContainerGap(comp.getX(), comp.getX())
-            .addComponent(comp, comp.getWidth(), comp.getWidth(), comp.getWidth())
-        );
-        this.v_parallel.addGroup(this.group_layout.createSequentialGroup()
-            .addContainerGap(comp.getY(), comp.getY())
-            .addComponent(comp, comp.getHeight(), comp.getHeight(), comp.getHeight())
-        );
-        return comp;
     }
 }
