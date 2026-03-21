@@ -36,7 +36,6 @@ public class RemoteFrame extends JFrame implements Runnable {
 
     private JLabel screenLabel;
     private JMenuBar menuBar;
-    private HardwareDialog hardwareDialog;
 
     /**
      * Ratio of server screen width to displayed label width.
@@ -122,12 +121,12 @@ public class RemoteFrame extends JFrame implements Runnable {
     }
 
     private void initComponents() throws RemoteException {
-        this.screenLabel    = new JLabel();
-        this.menuBar        = new JMenuBar();
-        JMenu monitorMenu   = new JMenu();
-        this.hardwareDialog = new HardwareDialog(this, this.remoteDesktop);
+        this.screenLabel            = new JLabel();
+        this.menuBar                = new JMenuBar();
+        JMenu monitorMenu           = new JMenu();
+        HardwareDialog hardwareDialog = new HardwareDialog(this, this.remoteDesktop);
 
-        this.setMinimumSize(this.hardwareDialog.getPreferredSize());
+        this.setMinimumSize(hardwareDialog.getPreferredSize());
 
         // Screen label — forwards mouse interaction to the server.
         this.screenLabel.addMouseListener(new MouseAdapter() {

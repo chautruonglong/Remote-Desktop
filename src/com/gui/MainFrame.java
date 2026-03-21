@@ -50,9 +50,6 @@ public class MainFrame extends JFrame {
     private CommonLabel clientLabel;
     private CommonLabel serverLabel;
     private CommonLabel chatLabel;
-    private ClientPanel clientPanel;
-    private ServerPanel serverPanel;
-    private MainChatPanel mainChatPanel;
 
     /** Maps each Tab constant to its corresponding content panel. */
     private final Map<Tab, JPanel> tabPanels = new EnumMap<>(Tab.class);
@@ -96,20 +93,20 @@ public class MainFrame extends JFrame {
 
     private void initComponents() {
         // Construct child panels.
-        JPanel taskbarPanel = new JPanel();
-        this.clientLabel    = new CommonLabel();
-        this.serverLabel    = new CommonLabel();
-        this.chatLabel      = new CommonLabel();
-        this.clientPanel    = new ClientPanel(this.commonBus);
-        this.serverPanel    = new ServerPanel(this.commonBus);
-        this.mainChatPanel  = new MainChatPanel(this.commonBus);
+        JPanel taskbarPanel       = new JPanel();
+        this.clientLabel          = new CommonLabel();
+        this.serverLabel          = new CommonLabel();
+        this.chatLabel            = new CommonLabel();
+        ClientPanel clientPanel   = new ClientPanel(this.commonBus);
+        ServerPanel serverPanel   = new ServerPanel(this.commonBus);
+        MainChatPanel mainChatPanel = new MainChatPanel(this.commonBus);
 
-        this.commonBus.setMainChatPanel(this.mainChatPanel);
+        this.commonBus.setMainChatPanel(mainChatPanel);
 
         // Register tab–panel mappings.
-        this.tabPanels.put(Tab.CLIENT, this.clientPanel);
-        this.tabPanels.put(Tab.SERVER, this.serverPanel);
-        this.tabPanels.put(Tab.CHAT, this.mainChatPanel);
+        this.tabPanels.put(Tab.CLIENT, clientPanel);
+        this.tabPanels.put(Tab.SERVER, serverPanel);
+        this.tabPanels.put(Tab.CHAT, mainChatPanel);
         this.activeTab = Tab.CLIENT;
 
         // Tab bar layout — three equal columns.
@@ -152,12 +149,12 @@ public class MainFrame extends JFrame {
         taskbarPanel.add(this.chatLabel);
 
         // Show only the client panel initially.
-        this.clientPanel.setVisible(true);
-        this.serverPanel.setVisible(false);
-        this.mainChatPanel.setVisible(false);
-        this.add(this.clientPanel);
-        this.add(this.serverPanel);
-        this.add(this.mainChatPanel);
+        clientPanel.setVisible(true);
+        serverPanel.setVisible(false);
+        mainChatPanel.setVisible(false);
+        this.add(clientPanel);
+        this.add(serverPanel);
+        this.add(mainChatPanel);
     }
 
     /**

@@ -55,7 +55,6 @@ public class ChatPanel extends JPanel implements Runnable {
     private static final String FONT_FAMILY_MONO = "consolas";
     private static final String FONT_FAMILY_UI   = "segoe ui";
 
-    private JPanel contentPanel;
     private JScrollPane scrollPanel;
     private JTextArea messageTextArea;
     private CommonLabel sendLabel;
@@ -102,24 +101,24 @@ public class ChatPanel extends JPanel implements Runnable {
     }
 
     private void initComponents() {
-        this.contentPanel  = new JPanel();
-        this.scrollPanel   = new JScrollPane();
+        JPanel contentPanel  = new JPanel();
+        this.scrollPanel     = new JScrollPane();
         this.messageTextArea = new JTextArea();
         this.sendLabel     = new CommonLabel();
         this.fileLabel     = new CommonLabel();
         this.loaderLabel   = new JLabel();
 
         // Message history scroll area.
-        this.contentLayout   = new GroupLayout(this.contentPanel);
+        this.contentLayout   = new GroupLayout(contentPanel);
         this.horizontalGroup = this.contentLayout.createParallelGroup();
         this.verticalGroup   = this.contentLayout.createSequentialGroup();
         this.contentLayout.setHorizontalGroup(this.horizontalGroup);
         this.contentLayout.setVerticalGroup(this.verticalGroup);
 
-        this.contentPanel.setBackground(Color.decode(CONTENT_BACKGROUND));
-        this.contentPanel.setLayout(this.contentLayout);
+        contentPanel.setBackground(Color.decode(CONTENT_BACKGROUND));
+        contentPanel.setLayout(this.contentLayout);
 
-        this.scrollPanel.setViewportView(this.contentPanel);
+        this.scrollPanel.setViewportView(contentPanel);
         this.scrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         this.scrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         this.scrollPanel.setBounds(10, 15, MainFrame.WIDTH_FRAME - 20, MainFrame.HEIGHT_FRAME - 150);
