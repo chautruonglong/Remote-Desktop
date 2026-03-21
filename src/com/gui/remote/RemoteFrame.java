@@ -7,6 +7,7 @@ import com.gui.client.ClientPanel;
 import com.model.ImageQuality;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -123,7 +124,7 @@ public class RemoteFrame extends JFrame implements Runnable {
     private void initComponents() throws RemoteException {
         this.screenLabel    = new JLabel();
         this.menuBar        = new JMenuBar();
-        var monitorMenu     = new JMenu();
+        JMenu monitorMenu   = new JMenu();
         this.hardwareDialog = new HardwareDialog(this, this.remoteDesktop);
 
         this.setMinimumSize(this.hardwareDialog.getPreferredSize());
@@ -207,12 +208,12 @@ public class RemoteFrame extends JFrame implements Runnable {
      * @throws Exception if the screenshot or geometry computation fails
      */
     private void setupDisplayGeometry() throws Exception {
-        var screenshotBytes = this.remoteDesktop.captureScreen(this.imageQuality);
-        var screenshot = ImageIO.read(new ByteArrayInputStream(screenshotBytes));
+        byte[]        screenshotBytes = this.remoteDesktop.captureScreen(this.imageQuality);
+        BufferedImage screenshot      = ImageIO.read(new ByteArrayInputStream(screenshotBytes));
 
-        var localScreen   = Toolkit.getDefaultToolkit().getScreenSize();
-        var frameInsets   = this.getInsets();
-        var taskbarInsets = Toolkit.getDefaultToolkit().getScreenInsets(this.getGraphicsConfiguration());
+        Dimension localScreen   = Toolkit.getDefaultToolkit().getScreenSize();
+        Insets    frameInsets   = this.getInsets();
+        Insets    taskbarInsets = Toolkit.getDefaultToolkit().getScreenInsets(this.getGraphicsConfiguration());
 
         int availWidth  = localScreen.width  - (taskbarInsets.left + taskbarInsets.right);
         int availHeight = localScreen.height - (taskbarInsets.top  + taskbarInsets.bottom + frameInsets.top + this.menuBar.getPreferredSize().height);
@@ -245,9 +246,9 @@ public class RemoteFrame extends JFrame implements Runnable {
         int height = this.screenLabel.getHeight();
         try {
             while (this.commonBus.isClientConnected()) {
-                var screenshotBytes = this.remoteDesktop.captureScreen(this.imageQuality);
-                var raw = ImageIO.read(new ByteArrayInputStream(screenshotBytes));
-                var scaled = raw.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+                byte[]        screenshotBytes = this.remoteDesktop.captureScreen(this.imageQuality);
+                BufferedImage raw             = ImageIO.read(new ByteArrayInputStream(screenshotBytes));
+                Image         scaled          = raw.getScaledInstance(width, height, Image.SCALE_SMOOTH);
                 this.screenLabel.setIcon(new ImageIcon(scaled));
             }
         } catch (Exception e) {

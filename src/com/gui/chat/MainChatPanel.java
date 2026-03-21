@@ -58,7 +58,7 @@ public class MainChatPanel extends JPanel {
     }
 
     private void initComponents() {
-        var menuBar           = new JMenuBar();
+        JMenuBar menuBar      = new JMenuBar();
         this.connectionsLabel = new JLabel();
         this.popupMenu        = new JPopupMenu();
 

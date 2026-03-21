@@ -96,7 +96,7 @@ public class ChatPanel extends JPanel implements Runnable {
 
         this.initComponents();
 
-        var receiveThread = new Thread(this);
+        Thread receiveThread = new Thread(this);
         receiveThread.setDaemon(true);
         receiveThread.start();
     }
@@ -136,7 +136,7 @@ public class ChatPanel extends JPanel implements Runnable {
             }
         });
 
-        var scrollText = new JScrollPane(this.messageTextArea);
+        JScrollPane scrollText = new JScrollPane(this.messageTextArea);
         scrollText.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollText.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollText.setBounds(

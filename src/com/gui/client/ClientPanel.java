@@ -62,7 +62,7 @@ public class ClientPanel extends JPanel {
     private void initComponents() {
         this.mainPanel         = new CommonPanel();
         this.connectLabel      = new CommonLabel();
-        var qualityButtonGroup  = new ButtonGroup();
+        ButtonGroup qualityButtonGroup = new ButtonGroup();
         this.lowQualityRadio   = new JRadioButton();
         this.highQualityRadio  = new JRadioButton();
         this.loaderLabel       = new JLabel();
@@ -155,7 +155,7 @@ public class ClientPanel extends JPanel {
      * @return {@code true} if the format is acceptable
      */
     private static boolean isValidHostFormat(String host) {
-        var dotCount = host.chars().filter(c -> c == '.').count();
+        long dotCount = host.chars().filter(c -> c == '.').count();
         // Three dots → IPv4 address; zero dots → simple hostname.
         return dotCount == 3 || dotCount == 0;
     }

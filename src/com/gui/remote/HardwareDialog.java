@@ -98,7 +98,7 @@ public class HardwareDialog extends JDialog implements Runnable {
 
         // Position drives scroll pane below RAM graph.
         int drivesY = ramY + HEIGHT_PANEL + 20;
-        var drivesScrollPane = new JScrollPane();
+        JScrollPane drivesScrollPane = new JScrollPane();
         drivesScrollPane.setViewportView(this.drivesInfoPanel);
         drivesScrollPane.setLocation(0, drivesY);
         drivesScrollPane.setSize(this.drivesInfoPanel.getSize());

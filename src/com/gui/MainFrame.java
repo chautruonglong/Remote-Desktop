@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
@@ -95,7 +96,7 @@ public class MainFrame extends JFrame {
 
     private void initComponents() {
         // Construct child panels.
-        var taskbarPanel    = new JPanel();
+        JPanel taskbarPanel = new JPanel();
         this.clientLabel    = new CommonLabel();
         this.serverLabel    = new CommonLabel();
         this.chatLabel      = new CommonLabel();
@@ -112,7 +113,7 @@ public class MainFrame extends JFrame {
         this.activeTab = Tab.CLIENT;
 
         // Tab bar layout — three equal columns.
-        var gridBagLayout = new GridBagLayout();
+        GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[]{ 100, 100, 100 };
         taskbarPanel.setLayout(gridBagLayout);
         taskbarPanel.setBackground(Color.decode(TASKBAR_BACKGROUND));
