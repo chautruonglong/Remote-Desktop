@@ -1,0 +1,18 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Compiled output
+out/
+*.class
+*.jar
+!lib/*.jar
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
