@@ -1,5 +1,6 @@
 package com.gui.remote;
 
+import com.gui.Icons;
 import com.model.ComputerInfo;
 import com.model.DriveInfo;
 import java.awt.Color;
@@ -80,9 +81,7 @@ public class DrivesInfoPanel extends JPanel {
                     " (Used " + usedGb + " GB of " + totalGb + " GB)" +
                     "</html>";
                 JLabel driveLabel = new JLabel(driveText);
-                driveLabel.setIcon(
-                    new ImageIcon(getClass().getClassLoader().getResource("hdd_icon.png"))
-                );
+                driveLabel.setIcon(Icons.HDD);
                 driveLabel.setFont(new Font("segoe ui", Font.PLAIN, 12));
                 driveLabel.setIconTextGap(20);
                 driveLabel.setBounds(PADDING + 30, y, DRIVE_LABEL_WIDTH, DRIVE_LABEL_HEIGHT);

@@ -5,6 +5,7 @@ import com.bus.chat.FileMessage;
 import com.bus.chat.Message;
 import com.bus.chat.StringMessage;
 import com.bus.common.CommonBus;
+import com.gui.Icons;
 import com.gui.MainFrame;
 import com.gui.client.ClientPanel;
 import com.gui.common.CommonLabel;
@@ -152,7 +153,7 @@ public class ChatPanel extends JPanel implements Runnable {
 
         // "Send" button.
         this.sendLabel.setText("Send");
-        this.sendLabel.setIcon(new ImageIcon(getClass().getClassLoader().getResource("send_icon.png")));
+        this.sendLabel.setIcon(Icons.SEND);
         this.sendLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
         this.sendLabel.setFont(new Font(FONT_FAMILY_UI, Font.PLAIN, 13));
         this.sendLabel.setBounds(this.scrollText.getWidth() + 50, this.scrollText.getY(), 80, 30);
@@ -166,7 +167,7 @@ public class ChatPanel extends JPanel implements Runnable {
 
         // "File" button.
         this.fileLabel.setText("File");
-        this.fileLabel.setIcon(new ImageIcon(getClass().getClassLoader().getResource("file_icon.png")));
+        this.fileLabel.setIcon(Icons.FILE);
         this.fileLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
         this.fileLabel.setFont(new Font(FONT_FAMILY_UI, Font.PLAIN, 13));
         this.fileLabel.setBounds(this.scrollText.getWidth() + 50, this.scrollText.getY() + 40, 60, 30);
@@ -183,9 +184,7 @@ public class ChatPanel extends JPanel implements Runnable {
         this.add(this.fileLabel);
 
         // Loading spinner.
-        this.loaderLabel.setIcon(
-            new ImageIcon(getClass().getClassLoader().getResource("loader_icon2.gif"))
-        );
+        this.loaderLabel.setIcon(Icons.LOADER_SMALL);
         this.loaderLabel.setBounds(this.fileLabel.getX() + 60, this.fileLabel.getY() + 7, 16, 16);
         this.loaderLabel.setVisible(false);
         this.add(this.loaderLabel);

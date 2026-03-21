@@ -1,9 +1,9 @@
 package com.gui.remote;
 
 import com.bus.rmi.IRemoteDesktop;
+import com.gui.Icons;
 import java.awt.Dimension;
 import java.rmi.RemoteException;
-import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -67,9 +67,7 @@ public class HardwareDialog extends JDialog implements Runnable {
         this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         this.setTitle("Hardware Information");
         this.setResizable(false);
-        this.setIconImage(
-            new ImageIcon(getClass().getClassLoader().getResource("dialog_icon.png")).getImage()
-        );
+        this.setIconImage(Icons.DIALOG.getImage());
         this.getContentPane().setPreferredSize(new Dimension(WIDTH_DIALOG, HEIGHT_DIALOG));
         this.setLayout(null);
         this.pack();

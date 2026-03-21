@@ -1,6 +1,7 @@
 package com.gui.client;
 
 import com.bus.common.CommonBus;
+import com.gui.Icons;
 import com.gui.MainFrame;
 import com.gui.common.CommonLabel;
 import com.gui.common.CommonPanel;
@@ -101,9 +102,7 @@ public class ClientPanel extends JPanel {
         );
 
         // "Connect now" action label.
-        this.connectLabel.setIcon(
-            new ImageIcon(getClass().getClassLoader().getResource("connect_icon.png"))
-        );
+        this.connectLabel.setIcon(Icons.CONNECT);
         this.connectLabel.setText("Connect now");
         this.connectLabel.setBounds(220, 290, 150, 50);
         this.connectLabel.setForeground(Color.decode(FOREGROUND));
@@ -131,9 +130,7 @@ public class ClientPanel extends JPanel {
         this.add(this.highQualityRadio);
 
         // Spinner shown while connecting.
-        this.loaderLabel.setIcon(
-            new ImageIcon(getClass().getClassLoader().getResource("loader_icon.gif"))
-        );
+        this.loaderLabel.setIcon(Icons.LOADER);
         this.loaderLabel.setBounds(340, 307, 16, 16);
         this.loaderLabel.setVisible(false);
         this.add(this.loaderLabel);

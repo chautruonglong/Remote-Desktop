@@ -1,6 +1,7 @@
 package com.gui.server;
 
 import com.bus.common.CommonBus;
+import com.gui.Icons;
 import com.gui.MainFrame;
 import com.gui.client.ClientPanel;
 import com.gui.common.CommonLabel;
@@ -11,7 +12,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.SocketException;
 import java.util.List;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -98,9 +98,7 @@ public class ServerPanel extends JPanel implements Runnable {
 
         // "Start listening" action label.
         this.listenLabel.setText("Start listening");
-        this.listenLabel.setIcon(
-            new ImageIcon(getClass().getClassLoader().getResource("listen_icon.png"))
-        );
+        this.listenLabel.setIcon(Icons.LISTEN);
         this.listenLabel.setBounds(50, 290, 150, 50);
         this.listenLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
         this.listenLabel.setFont(new Font(FONT_FAMILY, Font.PLAIN, 15));
@@ -114,9 +112,7 @@ public class ServerPanel extends JPanel implements Runnable {
 
         // "Stop listening" action label — initially disabled.
         this.stopLabel.setText("Stop listening");
-        this.stopLabel.setIcon(
-            new ImageIcon(getClass().getClassLoader().getResource("stop_icon.png"))
-        );
+        this.stopLabel.setIcon(Icons.STOP);
         this.stopLabel.setBounds(220, 290, 150, 50);
         this.stopLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
         this.stopLabel.setFont(new Font(FONT_FAMILY, Font.PLAIN, 15));

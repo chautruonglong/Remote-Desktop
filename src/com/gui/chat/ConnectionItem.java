@@ -1,9 +1,9 @@
 package com.gui.chat;
 
+import com.gui.Icons;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 
 /**
@@ -29,7 +29,7 @@ public class ConnectionItem extends JMenuItem {
         this.chatPanel     = chatPanel;
         this.allChatPanels = allChatPanels;
 
-        this.setIcon(new ImageIcon(getClass().getClassLoader().getResource("online.png")));
+        this.setIcon(Icons.ONLINE);
         this.setText(chatPanel.getRemoteHostName());
 
         this.addMouseListener(new MouseAdapter() {

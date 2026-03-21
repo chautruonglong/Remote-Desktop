@@ -81,9 +81,7 @@ public class MainFrame extends JFrame {
         this.setResizable(false);
         this.setTitle("Remote Desktop Software");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setIconImage(
-            new ImageIcon(getClass().getClassLoader().getResource("window_icon.png")).getImage()
-        );
+        this.setIconImage(Icons.WINDOW.getImage());
 
         this.addWindowListener(new WindowAdapter() {
             @Override

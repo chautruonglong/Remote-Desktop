@@ -2,6 +2,7 @@ package com.gui.remote;
 
 import com.bus.common.CommonBus;
 import com.bus.rmi.IRemoteDesktop;
+import com.gui.Icons;
 import com.gui.client.ClientPanel;
 import com.model.ImageQuality;
 import java.awt.*;
@@ -74,9 +75,7 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.remoteDesktop = this.commonBus.getRmiClient().getRemoteDesktop();
 
         this.setTitle("Remoting: " + commonBus.getTcpClient().getSocket().getLocalAddress().getHostName());
-        this.setIconImage(
-            new ImageIcon(getClass().getClassLoader().getResource("window_icon.png")).getImage()
-        );
+        this.setIconImage(Icons.WINDOW.getImage());
         this.getContentPane().setBackground(Color.BLACK);
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setLocationRelativeTo(null);
