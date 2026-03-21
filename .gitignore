@@ -1,3 +1,6 @@
+# Claude Code
+.claude/
+
 # IntelliJ IDEA
 .idea/
 *.iml
