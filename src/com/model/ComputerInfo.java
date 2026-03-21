@@ -1,5 +1,6 @@
 package com.model;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  * <p>Contains the operating system name and a list of detected disk drives.</p>
  */
 public class ComputerInfo implements Serializable {
-
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final String osName;

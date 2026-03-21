@@ -1,5 +1,6 @@
 package com.model;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -9,7 +10,7 @@ import java.io.Serializable;
  * {@link Serializable}. Space values are stored in gigabytes (GB).</p>
  */
 public class DriveInfo implements Serializable {
-
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final String name;
