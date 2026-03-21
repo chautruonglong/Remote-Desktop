@@ -86,7 +86,7 @@ public class MainChatPanel extends JPanel {
         menuBar.add(this.connectionsLabel);
         menuBar.setBounds(0, 0, MainFrame.WIDTH_FRAME, 20);
         menuBar.setLayout(new GridBagLayout());
-        this.add(this.menuBar);
+        this.add(menuBar);
     }
 
     /**

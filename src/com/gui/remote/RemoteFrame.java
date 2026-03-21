@@ -198,7 +198,7 @@ public class RemoteFrame extends JFrame implements Runnable {
                 setCursor(Cursor.getDefaultCursor());
             }
         });
-        this.menuBar.add(this.monitorMenu);
+        this.menuBar.add(monitorMenu);
     }
 
     /**
