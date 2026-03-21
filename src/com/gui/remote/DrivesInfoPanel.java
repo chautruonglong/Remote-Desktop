@@ -24,7 +24,7 @@ import javax.swing.*;
  */
 public class DrivesInfoPanel extends JPanel {
 
-    /** Hex colour for drive progress bars when usage is below the warning threshold. */
+    /** Hex color for drive progress bars when usage is below the warning threshold. */
     public static final String PROGRESS_FOREGROUND = "0x26A0DA";
 
     /** Usage ratio above which the progress bar switches to red. */
@@ -107,7 +107,7 @@ public class DrivesInfoPanel extends JPanel {
                 y += DRIVE_LABEL_HEIGHT + 10;
             }
 
-            // Update preferred size so the parent scroll pane knows the full content height.
+            // Update the preferred size so the parent scroll pane knows the full content height.
             this.setPreferredSize(new Dimension(HardwareDialog.WIDTH_DIALOG, y + 10));
 
             this.validate();

@@ -42,7 +42,7 @@ public class MainFrame extends JFrame {
     /** Height of the top tab bar in pixels. */
     public static final int HEIGHT_TASKBAR = 50;
 
-    /** Hex colour string for the tab bar background. */
+    /** Hex color string for the tab bar background. */
     public static final String TASKBAR_BACKGROUND = "0x000942";
 
     private final CommonBus commonBus;
@@ -174,7 +174,7 @@ public class MainFrame extends JFrame {
     /**
      * Handles a click on one of the three tab labels.
      *
-     * <p>If the clicked tab is already active, nothing happens. Otherwise the panel
+     * <p>If the clicked tab is already active, nothing happens. Otherwise, the panel
      * transitions with a horizontal slide animation and the label font sizes are updated.</p>
      *
      * @param e     the mouse event
