@@ -39,7 +39,7 @@ public class HardwareDialog extends JDialog implements Runnable {
     private JScrollPane drivesScrollPane;
 
     private final IRemoteDesktop remoteDesktop;
-    private Thread updateThread;
+    private final Thread updateThread;
 
     private final long totalRamGb;
     private final long totalSwapGb;
@@ -132,7 +132,7 @@ public class HardwareDialog extends JDialog implements Runnable {
      */
     @Override
     public void dispose() {
-        if (this.updateThread != null && !this.updateThread.isInterrupted()) {
+        if (!this.updateThread.isInterrupted()) {
             this.updateThread.interrupt();
         }
         super.setVisible(false);

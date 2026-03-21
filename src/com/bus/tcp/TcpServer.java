@@ -116,7 +116,7 @@ public class TcpServer {
      * @return a list of IPv4 address strings (never {@code null})
      * @throws SocketException if the network interface list cannot be read
      */
-    public List<String> getLocalIpv4Addresses() throws SocketException {
+    public static List<String> getLocalIpv4Addresses() throws SocketException {
         List<String> addresses = new ArrayList<>();
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
         while (interfaces.hasMoreElements()) {

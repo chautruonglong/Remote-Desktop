@@ -161,11 +161,11 @@ public class MainChatPanel extends JPanel {
 
     private void onConnectionsLabelEntered(MouseEvent e) {
         this.connectionsLabel.setFont(new Font(FONT_FAMILY, Font.BOLD, 13));
-        this.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     private void onConnectionsLabelExited(MouseEvent e) {
         this.connectionsLabel.setFont(new Font(FONT_FAMILY, Font.PLAIN, 13));
-        this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        this.setCursor(Cursor.getDefaultCursor());
     }
 }

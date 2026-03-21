@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
@@ -114,7 +113,7 @@ public class MainFrame extends JFrame {
         this.activeTab = Tab.CLIENT;
 
         // Tab bar layout — three equal columns.
-        GridBagLayout gridBagLayout = new GridBagLayout();
+        var gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[]{ 100, 100, 100 };
         this.taskbarPanel.setLayout(gridBagLayout);
         this.taskbarPanel.setBackground(Color.decode(TASKBAR_BACKGROUND));
@@ -217,7 +216,7 @@ public class MainFrame extends JFrame {
 
         AtomicInteger hideX = new AtomicInteger(0);
         AtomicInteger showX = new AtomicInteger(fromRight ? WIDTH_FRAME : -WIDTH_FRAME);
-        AtomicInteger step  = new AtomicInteger(fromRight ? -50 : 50);
+        final int step = fromRight ? -50 : 50;
 
         Timer timer = new Timer(10, e -> {
             hidePanel.setLocation(hideX.get(), HEIGHT_TASKBAR);
@@ -229,8 +228,8 @@ public class MainFrame extends JFrame {
                 return;
             }
 
-            showX.addAndGet(step.get());
-            hideX.addAndGet(step.get());
+            showX.addAndGet(step);
+            hideX.addAndGet(step);
         });
         timer.start();
     }

@@ -65,14 +65,14 @@ public class FileLabel extends JLabel {
 
     private void onMouseEntered(MouseEvent e) {
         if (this.isEnabled()) {
-            this.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             this.setFont(new Font(FONT_FAMILY, Font.ITALIC | Font.BOLD, HOVER_SIZE));
         }
     }
 
     private void onMouseExited(MouseEvent e) {
         if (this.isEnabled()) {
-            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            this.setCursor(Cursor.getDefaultCursor());
             this.setFont(new Font(FONT_FAMILY, Font.ITALIC, NORMAL_SIZE));
         }
     }

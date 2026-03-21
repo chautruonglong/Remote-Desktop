@@ -83,7 +83,7 @@ public class CommonLabel extends JLabel {
 
     private void onMouseEntered(MouseEvent e) {
         if (this.isEnabled()) {
-            this.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             int currentSize = this.getFont().getSize();
             this.setFont(new Font(FONT_FAMILY, Font.BOLD, currentSize));
         }
@@ -91,7 +91,7 @@ public class CommonLabel extends JLabel {
 
     private void onMouseExited(MouseEvent e) {
         if (this.isEnabled()) {
-            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            this.setCursor(Cursor.getDefaultCursor());
             int currentSize = this.getFont().getSize();
             this.setFont(new Font(FONT_FAMILY, Font.PLAIN, currentSize));
         }

@@ -25,10 +25,10 @@ import java.rmi.NotBoundException;
 public class CommonBus {
 
     private TcpServer tcpServer;
-    private RmiServer rmiServer;
+    private final RmiServer rmiServer;
 
     private TcpClient tcpClient;
-    private RmiClient rmiClient;
+    private final RmiClient rmiClient;
 
     /**
      * Creates a new {@code CommonBus}.

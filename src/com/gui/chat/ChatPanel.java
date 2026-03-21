@@ -243,7 +243,7 @@ public class ChatPanel extends JPanel implements Runnable {
     private void sendMessage() {
         try {
             String content = this.messageTextArea.getText();
-            if (content.trim().isEmpty()) return;
+            if (content.isBlank()) return;
 
             StringMessage message = new StringMessage(this.localHostName, content);
             this.chatBus.sendMessage(message);
@@ -345,7 +345,7 @@ public class ChatPanel extends JPanel implements Runnable {
      * @param headerColor the HTML colour name for the header
      * @return an HTML string suitable for use in a {@link JLabel}
      */
-    private String formatMessage(String rawText, String headerColor) {
+    private static String formatMessage(String rawText, String headerColor) {
         return "<html>" + buildHeader(rawText, headerColor) + buildWrappedBody(rawText) + "</html>";
     }
 
@@ -354,7 +354,7 @@ public class ChatPanel extends JPanel implements Runnable {
      * in a coloured HTML {@code <font>} tag, and appends a line break.
      * Returns an empty string if no colon is present.
      */
-    private String buildHeader(String text, String color) {
+    private static String buildHeader(String text, String color) {
         if (!text.contains(":")) return "";
         String header = text.substring(0, text.indexOf(':') + 1);
         return "<font color='" + color + "'>" + header + "</font><br>";
@@ -364,7 +364,7 @@ public class ChatPanel extends JPanel implements Runnable {
      * Extracts the body portion of {@code text} (after the first colon) and inserts
      * {@code <br>} tags every {@link #MAX_LINE_LENGTH} characters for readability.
      */
-    private String buildWrappedBody(String text) {
+    private static String buildWrappedBody(String text) {
         String body = text.substring(text.indexOf(':') + 1);
         if (body.length() <= MAX_LINE_LENGTH) return body;
 

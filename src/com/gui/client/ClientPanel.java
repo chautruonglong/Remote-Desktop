@@ -34,7 +34,6 @@ public class ClientPanel extends JPanel {
     public static final String FOREGROUND = "0x003927";
 
     private static final String FONT_FAMILY = "segoe ui";
-    private static final long MAX_FILE_SIZE_BYTES = 30L * 1024 * 1024;
 
     private CommonPanel mainPanel;
     private CommonLabel connectLabel;
@@ -156,8 +155,8 @@ public class ClientPanel extends JPanel {
      * @param host the user-supplied host string
      * @return {@code true} if the format is acceptable
      */
-    private boolean isValidHostFormat(String host) {
-        long dotCount = host.chars().filter(c -> c == '.').count();
+    private static boolean isValidHostFormat(String host) {
+        var dotCount = host.chars().filter(c -> c == '.').count();
         // Three dots → IPv4 address; zero dots → simple hostname.
         return dotCount == 3 || dotCount == 0;
     }
