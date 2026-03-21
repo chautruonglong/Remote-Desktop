@@ -6,10 +6,10 @@ import com.gui.Icons;
 import com.gui.MainFrame;
 import com.gui.common.CommonLabel;
 import com.gui.common.CommonPanel;
+import com.gui.common.UiSupport;
 import com.gui.remote.RemoteFrame;
 import com.model.ImageQuality;
 import java.awt.Color;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -160,8 +160,9 @@ public class ClientPanel extends JPanel {
         this.setEnabled(false);
         this.loaderLabel.setVisible(true);
 
-        Thread.ofPlatform().daemon().name("remote-connect").start(() -> {
-            try {
+        UiSupport.runAsync(
+            "remote-connect",
+            () -> {
                 String host     = this.mainPanel.getHostTextField().getText().trim();
                 int    port     = Integer.parseInt(this.mainPanel.getPortTextField().getText().trim());
                 // Use getPassword() to avoid leaving the password as a String in the pool.
@@ -175,25 +176,19 @@ public class ClientPanel extends JPanel {
                     ? ImageQuality.HIGH
                     : ImageQuality.LOW;
 
-                EventQueue.invokeLater(() -> {
+                UiSupport.runOnEdt(() -> {
                     try {
                         new RemoteFrame(this, this.commonBus, quality);
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(
-                            this,
-                            "Could not start remote session:\n" + ex.getMessage()
-                        );
+                        UiSupport.showError(this, "Could not start remote session", ex);
                     }
                 });
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(
-                    this,
-                    "Could not connect to server:\n" + ex.getMessage()
-                );
-            } finally {
+            },
+            exception -> UiSupport.showError(this, "Could not connect to server", exception),
+            () -> {
                 this.setEnabled(true);
                 this.loaderLabel.setVisible(false);
             }
-        });
+        );
     }
 }

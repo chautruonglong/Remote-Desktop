@@ -9,8 +9,8 @@ import com.gui.AppStyles;
 import com.gui.Icons;
 import com.gui.MainFrame;
 import com.gui.common.CommonLabel;
+import com.gui.common.UiSupport;
 import java.awt.Color;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.KeyAdapter;
@@ -89,7 +89,7 @@ public class ChatPanel extends JPanel implements Runnable {
 
         this.initComponents();
 
-        Thread.ofPlatform().daemon().name("chat-receiver").start(this);
+        UiSupport.startDaemon("chat-receiver", this);
     }
 
     private void initComponents() {
@@ -164,7 +164,7 @@ public class ChatPanel extends JPanel implements Runnable {
                 try {
                     onFileLabelClicked(e);
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(null, "Could not send file:\n" + ex.getMessage());
+                    UiSupport.showError(null, "Could not send file", ex);
                 }
             }
         });
@@ -241,7 +241,7 @@ public class ChatPanel extends JPanel implements Runnable {
             label.setForeground(Color.BLACK);
             addMessageToPanel(label, rightGap, "green");
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Could not send message:\n" + ex.getMessage());
+            UiSupport.showError(this, "Could not send message", ex);
         } finally {
             this.messageTextArea.setText("");
         }
@@ -269,32 +269,33 @@ public class ChatPanel extends JPanel implements Runnable {
         this.loaderLabel.setVisible(true);
         this.setEnabled(false);
 
-        startFileSend(selectedFile);
-    }
-
-    private void startFileSend(File selectedFile) {
-        Thread.ofPlatform().daemon().name("chat-file-send").start(() -> {
-            try (FileInputStream fis = new FileInputStream(selectedFile)) {
-                var fileMessage = new FileMessage(
-                    this.localHostName,
-                    selectedFile.getName(),
-                    selectedFile.length(),
-                    fis.readAllBytes()
-                );
-                this.chatBus.sendMessage(fileMessage);
-
-                int rightGap = this.scrollPanel.getWidth() - 180;
-                var fileLabel = new FileLabel(
-                    new FileMessage("You", fileMessage.fileName(), fileMessage.fileLength(), fileMessage.fileData())
-                );
-                addMessageToPanel(fileLabel, rightGap, "green");
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(null, "Could not send file:\n" + ex.getMessage());
-            } finally {
+        UiSupport.runAsync(
+            "chat-file-send",
+            () -> sendFile(selectedFile),
+            exception -> UiSupport.showError(null, "Could not send file", exception),
+            () -> {
                 this.setEnabled(true);
                 this.loaderLabel.setVisible(false);
             }
-        });
+        );
+    }
+
+    private void sendFile(File selectedFile) throws IOException {
+        try (FileInputStream fis = new FileInputStream(selectedFile)) {
+            var fileMessage = new FileMessage(
+                this.localHostName,
+                selectedFile.getName(),
+                selectedFile.length(),
+                fis.readAllBytes()
+            );
+            this.chatBus.sendMessage(fileMessage);
+
+            int rightGap = this.scrollPanel.getWidth() - 180;
+            var fileLabel = new FileLabel(
+                new FileMessage("You", fileMessage.fileName(), fileMessage.fileLength(), fileMessage.fileData())
+            );
+            addMessageToPanel(fileLabel, rightGap, "green");
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -313,7 +314,7 @@ public class ChatPanel extends JPanel implements Runnable {
      * @param headerColor HTML color string for the sender header (e.g., {@code "green"} or {@code "blue"})
      */
     public void addMessageToPanel(JLabel label, int rightGap, String headerColor) {
-        EventQueue.invokeLater(() -> {
+        UiSupport.runOnEdt(() -> {
             label.setText(formatMessage(label.getText(), headerColor));
 
             this.horizontalGroup.addGroup(
@@ -423,18 +424,20 @@ public class ChatPanel extends JPanel implements Runnable {
         this.commonBus.getTcpServer().setHasConnectedClient(false);
         this.commonBus.getTcpClient().setConnected(false);
 
-        this.parentPanel.remove(this);
-        this.parentPanel.getPopupMenu().remove(this.connectionItem);
-        this.parentPanel.adjustConnectionCount(-1);
-        this.parentPanel.getChatPanels().remove(this);
-        this.parentPanel.validate();
-        this.parentPanel.revalidate();
-        this.parentPanel.repaint();
+        UiSupport.runOnEdt(() -> {
+            this.parentPanel.remove(this);
+            this.parentPanel.getPopupMenu().remove(this.connectionItem);
+            this.parentPanel.adjustConnectionCount(-1);
+            this.parentPanel.getChatPanels().remove(this);
+            this.parentPanel.validate();
+            this.parentPanel.revalidate();
+            this.parentPanel.repaint();
+        });
 
         try {
             this.chatBus.getSocket().close();
         } catch (IOException ex) {
-            System.err.println("Error closing chat socket: " + ex.getMessage());
+            UiSupport.logError("Error closing chat socket", ex);
         }
     }
 
@@ -452,7 +455,7 @@ public class ChatPanel extends JPanel implements Runnable {
         try {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
-            System.err.println("Could not resolve local hostname, using 'localhost': " + e.getMessage());
+            UiSupport.logError("Could not resolve local hostname, using 'localhost'", e);
             return "localhost";
         }
     }

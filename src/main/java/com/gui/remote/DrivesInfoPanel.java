@@ -2,11 +2,11 @@ package com.gui.remote;
 
 import com.gui.AppStyles;
 import com.gui.Icons;
+import com.gui.common.UiSupport;
 import com.model.ComputerInfo;
 import com.model.DriveInfo;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
 import javax.swing.*;
 
@@ -49,13 +49,13 @@ public class DrivesInfoPanel extends JPanel {
     /**
      * Rebuilds the panel contents to reflect the given computer information snapshot.
      *
-     * <p>This method posts all component work to the EDT via {@link EventQueue#invokeLater}
-     * so it is safe to call from any thread.</p>
+     * <p>This method posts all component work to the EDT, so it is safe to call from
+     * any thread.</p>
      *
      * @param pcInfo the latest snapshot of the remote machine's OS and drives
      */
     public void updateInfo(ComputerInfo pcInfo) {
-        EventQueue.invokeLater(() -> {
+        UiSupport.runOnEdt(() -> {
             this.removeAll();
 
             int y = 5;

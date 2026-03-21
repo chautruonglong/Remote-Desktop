@@ -2,6 +2,7 @@ package com.gui.chat;
 
 import com.bus.chat.FileMessage;
 import com.gui.AppStyles;
+import com.gui.common.UiSupport;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
@@ -11,7 +12,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileSystemView;
 
 /**
@@ -95,7 +95,7 @@ public class FileLabel extends JLabel {
         try (FileOutputStream fos = new FileOutputStream(destination)) {
             fos.write(this.fileMessage.fileData());
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(null, "Could not save file:\n" + ex.getMessage());
+            UiSupport.showError(null, "Could not save file", ex);
         }
     }
 }

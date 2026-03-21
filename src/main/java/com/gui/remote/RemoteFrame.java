@@ -5,13 +5,16 @@ import com.bus.rmi.IRemoteDesktop;
 import com.gui.AppStyles;
 import com.gui.Icons;
 import com.gui.client.ClientPanel;
+import com.gui.common.UiSupport;
 import com.model.ImageQuality;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.Duration;
 import java.rmi.RemoteException;
+import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
@@ -29,6 +32,7 @@ import javax.swing.*;
  * the {@link ClientPanel} so the user can start a new session.</p>
  */
 public class RemoteFrame extends JFrame implements Runnable {
+    private static final long MOUSE_EVENT_INTERVAL_NANOS = TimeUnit.MILLISECONDS.toNanos(8);
 
     private final ClientPanel clientPanel;
     private final CommonBus commonBus;
@@ -51,6 +55,11 @@ public class RemoteFrame extends JFrame implements Runnable {
     private float scaleY;
 
     private final Thread screenThread;
+    private final ImageIcon screenIcon = new ImageIcon();
+
+    private volatile long lastMouseEventAt;
+    private volatile int lastMouseX = Integer.MIN_VALUE;
+    private volatile int lastMouseY = Integer.MIN_VALUE;
 
     /**
      * Creates and opens the remote desktop viewing window.
@@ -116,8 +125,7 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.initComponents();
         this.setupDisplayGeometry();
 
-        this.screenThread = Thread.ofPlatform().daemon().name("remote-screen-stream").unstarted(this);
-        this.screenThread.start();
+        this.screenThread = UiSupport.startDaemon("remote-screen-stream", this);
     }
 
     private void initComponents() throws RemoteException {
@@ -125,6 +133,10 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.menuBar                = new JMenuBar();
         JMenu monitorMenu           = new JMenu();
         HardwareDialog hardwareDialog = new HardwareDialog(this, this.remoteDesktop);
+
+        this.screenLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        this.screenLabel.setVerticalAlignment(SwingConstants.CENTER);
+        this.screenLabel.setIcon(this.screenIcon);
 
         this.setMinimumSize(hardwareDialog.getPreferredSize());
 
@@ -207,8 +219,9 @@ public class RemoteFrame extends JFrame implements Runnable {
      * @throws Exception if the screenshot or geometry computation fails
      */
     private void setupDisplayGeometry() throws Exception {
-        byte[]        screenshotBytes = this.remoteDesktop.captureScreen(this.imageQuality);
-        BufferedImage screenshot      = ImageIO.read(new ByteArrayInputStream(screenshotBytes));
+        int[] remoteScreen = this.remoteDesktop.getScreenDimensions();
+        int remoteWidth = remoteScreen[0];
+        int remoteHeight = remoteScreen[1];
 
         Dimension localScreen   = Toolkit.getDefaultToolkit().getScreenSize();
         Insets    frameInsets   = this.getInsets();
@@ -217,21 +230,23 @@ public class RemoteFrame extends JFrame implements Runnable {
         int availWidth  = localScreen.width  - (taskbarInsets.left + taskbarInsets.right);
         int availHeight = localScreen.height - (taskbarInsets.top  + taskbarInsets.bottom + frameInsets.top + this.menuBar.getPreferredSize().height);
 
-        if (availWidth > screenshot.getWidth() && availHeight > screenshot.getHeight()) {
+        if (availWidth > remoteWidth && availHeight > remoteHeight) {
             // The server screen is smaller — center it with no scaling.
-            int hGap = (availWidth  - screenshot.getWidth())  / 2;
-            int vGap = (availHeight - screenshot.getHeight()) / 2;
+            int hGap = (availWidth  - remoteWidth)  / 2;
+            int vGap = (availHeight - remoteHeight) / 2;
             this.scaleX = 1f;
             this.scaleY = 1f;
-            this.screenLabel.setBounds(hGap, vGap, screenshot.getWidth(), screenshot.getHeight());
+            this.screenLabel.setBounds(hGap, vGap, remoteWidth, remoteHeight);
         } else {
             // The server screen is larger — scale to fit, preserving an aspect ratio.
-            float ratio      = (float) screenshot.getWidth() / screenshot.getHeight();
-            int scaledWidth  = (int) (ratio * availHeight);
+            float ratio      = (float) remoteWidth / remoteHeight;
+            int scaledWidth  = Math.min(availWidth, Math.max(1, (int) (ratio * availHeight)));
+            int scaledHeight = Math.max(1, Math.min(availHeight, (int) (scaledWidth / ratio)));
             int hGap         = (availWidth - scaledWidth) / 2;
-            this.scaleX = (float) screenshot.getWidth()  / scaledWidth;
-            this.scaleY = (float) screenshot.getHeight() / availHeight;
-            this.screenLabel.setBounds(hGap, 0, scaledWidth, availHeight);
+            int vGap         = (availHeight - scaledHeight) / 2;
+            this.scaleX = (float) remoteWidth  / scaledWidth;
+            this.scaleY = (float) remoteHeight / scaledHeight;
+            this.screenLabel.setBounds(hGap, vGap, scaledWidth, scaledHeight);
         }
     }
 
@@ -243,12 +258,19 @@ public class RemoteFrame extends JFrame implements Runnable {
     public void run() {
         int width  = this.screenLabel.getWidth();
         int height = this.screenLabel.getHeight();
+        long frameIntervalNanos = TimeUnit.SECONDS.toNanos(1) / this.imageQuality.getTargetFps();
         try {
             while (this.commonBus.isClientConnected()) {
-                byte[]        screenshotBytes = this.remoteDesktop.captureScreen(this.imageQuality);
-                BufferedImage raw             = ImageIO.read(new ByteArrayInputStream(screenshotBytes));
-                Image         scaled          = raw.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-                this.screenLabel.setIcon(new ImageIcon(scaled));
+                long frameStartedAt = System.nanoTime();
+                byte[] screenshotBytes = this.remoteDesktop.captureScreen(this.imageQuality, width, height);
+                BufferedImage frame = ImageIO.read(new ByteArrayInputStream(screenshotBytes));
+                if (frame != null) {
+                    UiSupport.runOnEdt(() -> {
+                        this.screenIcon.setImage(frame);
+                        this.screenLabel.repaint();
+                    });
+                }
+                sleepForFrameBudget(frameStartedAt, frameIntervalNanos);
             }
         } catch (Exception e) {
             // Connection dropped, or session ended — fall through to dispose.
@@ -273,7 +295,7 @@ public class RemoteFrame extends JFrame implements Runnable {
                 this.commonBus.getTcpClient().getSocket().close();
             }
         } catch (IOException ex) {
-            System.err.println("Error closing client socket on dispose: " + ex.getMessage());
+            UiSupport.logError("Error closing client socket on dispose", ex);
         }
         this.clientPanel.setEnabled(true);
         super.setVisible(false);
@@ -291,12 +313,31 @@ public class RemoteFrame extends JFrame implements Runnable {
      * @param e the mouse event from the screen label
      */
     private void sendMousePosition(MouseEvent e) {
+        long now = System.nanoTime();
+        int serverX = (int) (e.getX() * scaleX);
+        int serverY = (int) (e.getY() * scaleY);
+        if (serverX == this.lastMouseX && serverY == this.lastMouseY) {
+            return;
+        }
+        if (now - this.lastMouseEventAt < MOUSE_EVENT_INTERVAL_NANOS) {
+            return;
+        }
+
         try {
-            int serverX = (int) (e.getX() * scaleX);
-            int serverY = (int) (e.getY() * scaleY);
             this.remoteDesktop.moveMouse(serverX, serverY);
+            this.lastMouseX = serverX;
+            this.lastMouseY = serverY;
+            this.lastMouseEventAt = now;
         } catch (RemoteException ex) {
             dispose();
+        }
+    }
+
+    private static void sleepForFrameBudget(long frameStartedAt, long frameIntervalNanos) throws InterruptedException {
+        long elapsedNanos = System.nanoTime() - frameStartedAt;
+        long remainingNanos = frameIntervalNanos - elapsedNanos;
+        if (remainingNanos > 0) {
+            Thread.sleep(Duration.ofNanos(remainingNanos));
         }
     }
 }

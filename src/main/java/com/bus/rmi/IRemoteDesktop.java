@@ -23,14 +23,25 @@ public interface IRemoteDesktop extends Remote {
     // -------------------------------------------------------------------------
 
     /**
-     * Captures the server's full screen and returns it as a compressed image byte array.
+     * Captures the server's screen, optionally scales it down server-side, and returns it
+     * as a compressed image byte array.
      *
      * @param quality the desired image format ({@link ImageQuality#LOW} for JPEG,
-     *                {@link ImageQuality#HIGH} for PNG)
+     *                {@link ImageQuality#HIGH} for higher-fidelity JPEG)
+     * @param targetWidth the preferred maximum frame width on the client, or {@code 0} for native width
+     * @param targetHeight the preferred maximum frame height on the client, or {@code 0} for native height
      * @return the captured screenshot encoded in the requested format
      * @throws Exception if capture or encoding fails
      */
-    byte[] captureScreen(ImageQuality quality) throws Exception;
+    byte[] captureScreen(ImageQuality quality, int targetWidth, int targetHeight) throws Exception;
+
+    /**
+     * Returns the server's primary screen dimensions in pixels.
+     *
+     * @return a two-element array {@code [width, height]}
+     * @throws RemoteException on network error
+     */
+    int[] getScreenDimensions() throws RemoteException;
 
     // -------------------------------------------------------------------------
     // Mouse control

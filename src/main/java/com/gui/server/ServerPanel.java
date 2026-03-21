@@ -7,6 +7,7 @@ import com.gui.Icons;
 import com.gui.MainFrame;
 import com.gui.common.CommonLabel;
 import com.gui.common.CommonPanel;
+import com.gui.common.UiSupport;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
@@ -15,7 +16,6 @@ import java.net.SocketException;
 import java.util.List;
 import java.util.Objects;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -76,7 +76,7 @@ public class ServerPanel extends JPanel implements Runnable {
                         mainPanel.getHostCombo().addItem(address);
                     }
                 } catch (SocketException ex) {
-                    System.err.println("Failed to enumerate local network interfaces: " + ex.getMessage());
+                    UiSupport.logError("Failed to enumerate local network interfaces", ex);
                 }
             }
 
@@ -135,20 +135,11 @@ public class ServerPanel extends JPanel implements Runnable {
 
             this.commonBus.startServer(host, port, password);
 
-            this.listenThread = Thread.ofPlatform().daemon().name("server-listener").unstarted(this);
-            this.listenThread.start();
+            this.listenThread = UiSupport.startDaemon("server-listener", this);
 
-            this.mainPanel.setEnabled(false);
-            this.listenLabel.resetFont();
-            this.listenLabel.setEnabled(false);
-            this.stopLabel.setEnabled(true);
-            this.statusLabel.setText("Status: Listening...");
-            this.statusLabel.setForeground(Color.decode(AppStyles.COLOR_STATUS_LISTENING));
+            setListeningState(true);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(
-                this,
-                "Could not start server:\n" + ex.getMessage()
-            );
+            UiSupport.showError(this, "Could not start server", ex);
         }
     }
 
@@ -162,18 +153,10 @@ public class ServerPanel extends JPanel implements Runnable {
             this.commonBus.stopServer();
             this.listenThread.interrupt();
 
-            this.mainPanel.setEnabled(true);
-            this.stopLabel.resetFont();
-            this.stopLabel.setEnabled(false);
-            this.listenLabel.setEnabled(true);
-            this.statusLabel.setText("Status: Stopped");
-            this.statusLabel.setForeground(Color.decode(AppStyles.COLOR_STATUS_STOPPED));
+            setListeningState(false);
         } catch (Exception ex) {
-            System.err.println("Error stopping server: " + ex.getMessage());
-            JOptionPane.showMessageDialog(
-                this,
-                "Could not stop server:\n" + ex.getMessage()
-            );
+            UiSupport.logError("Error stopping server", ex);
+            UiSupport.showError(this, "Could not stop server", ex);
         }
     }
 
@@ -190,8 +173,20 @@ public class ServerPanel extends JPanel implements Runnable {
             } catch (Exception e) {
                 // A closed socket throws when stopServer() is called — this is expected.
                 if (!this.commonBus.isServerListening()) break;
-                System.err.println("Error accepting client connection: " + e.getMessage());
+                UiSupport.logError("Error accepting client connection", e);
             }
         }
+    }
+
+    private void setListeningState(boolean listening) {
+        this.mainPanel.setEnabled(!listening);
+        this.listenLabel.resetFont();
+        this.stopLabel.resetFont();
+        this.listenLabel.setEnabled(!listening);
+        this.stopLabel.setEnabled(listening);
+        this.statusLabel.setText(listening ? "Status: Listening..." : "Status: Stopped");
+        this.statusLabel.setForeground(Color.decode(
+            listening ? AppStyles.COLOR_STATUS_LISTENING : AppStyles.COLOR_STATUS_STOPPED
+        ));
     }
 }

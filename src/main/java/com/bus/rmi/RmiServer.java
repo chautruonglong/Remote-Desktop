@@ -1,5 +1,4 @@
 package com.bus.rmi;
-
 import java.awt.AWTException;
 import java.net.MalformedURLException;
 import java.rmi.Naming;

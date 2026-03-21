@@ -4,6 +4,7 @@ import com.bus.common.CommonBus;
 import com.gui.chat.MainChatPanel;
 import com.gui.client.ClientPanel;
 import com.gui.common.CommonLabel;
+import com.gui.common.UiSupport;
 import com.gui.server.ServerPanel;
 import com.model.Tab;
 import java.awt.Color;
@@ -161,7 +162,7 @@ public class MainFrame extends JFrame {
         try {
             this.commonBus.stopServer();
         } catch (IOException | NotBoundException ex) {
-            System.err.println("Error while stopping server on window close: " + ex.getMessage());
+            UiSupport.logError("Error while stopping server on window close", ex);
         }
     }
 

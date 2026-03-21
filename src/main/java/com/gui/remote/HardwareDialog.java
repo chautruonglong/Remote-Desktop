@@ -2,6 +2,7 @@ package com.gui.remote;
 
 import com.bus.rmi.IRemoteDesktop;
 import com.gui.Icons;
+import com.gui.common.UiSupport;
 import java.awt.Dimension;
 import java.rmi.RemoteException;
 import javax.swing.JDialog;
@@ -73,8 +74,7 @@ public class HardwareDialog extends JDialog implements Runnable {
 
         this.initComponents();
 
-        this.updateThread = Thread.ofPlatform().daemon().name("hardware-monitor").unstarted(this);
-        this.updateThread.start();
+        this.updateThread = UiSupport.startDaemon("hardware-monitor", this);
     }
 
     private void initComponents() {
@@ -120,7 +120,7 @@ public class HardwareDialog extends JDialog implements Runnable {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (Exception e) {
-            this.setVisible(false);
+            UiSupport.runOnEdt(() -> this.setVisible(false));
         }
     }
 

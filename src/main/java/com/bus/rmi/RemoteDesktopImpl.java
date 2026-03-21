@@ -8,11 +8,16 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Iterator;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.swing.filechooser.FileSystemView;
 
 /**
@@ -59,17 +64,22 @@ public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDes
     /**
      * {@inheritDoc}
      *
-     * <p>Captures the entire screen bounds and encodes the result using the format
-     * specified by {@code quality} (JPEG for low, PNG for high).</p>
+     * <p>Captures the entire screen, scales it down to the requested client viewport when
+     * needed, and encodes it using the format specified by {@code quality}.</p>
      */
     @Override
-    public byte[] captureScreen(ImageQuality quality) throws Exception {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        Rectangle screenBounds = new Rectangle(screenSize);
+    public byte[] captureScreen(ImageQuality quality, int targetWidth, int targetHeight) throws Exception {
+        Rectangle screenBounds = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
         BufferedImage screenshot = this.robot.createScreenCapture(screenBounds);
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        ImageIO.write(screenshot, quality.getFormatName(), buffer);
-        return buffer.toByteArray();
+        BufferedImage frame = scaleForStreaming(screenshot, targetWidth, targetHeight);
+        return encodeFrame(frame, quality);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int[] getScreenDimensions() throws RemoteException {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        return new int[]{ screenSize.width, screenSize.height };
     }
 
     // -------------------------------------------------------------------------
@@ -173,5 +183,57 @@ public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDes
             drives.add(new DriveInfo(displayName, freeGb, totalGb));
         }
         return new ComputerInfo(this.osBean.getName(), drives);
+    }
+
+    private static BufferedImage scaleForStreaming(BufferedImage source, int targetWidth, int targetHeight) {
+        if (targetWidth <= 0 || targetHeight <= 0) {
+            return source;
+        }
+
+        double widthScale = (double) targetWidth / source.getWidth();
+        double heightScale = (double) targetHeight / source.getHeight();
+        double scale = Math.min(Math.min(widthScale, heightScale), 1d);
+        if (scale >= 1d) {
+            return source;
+        }
+
+        int scaledWidth = Math.max(1, (int) Math.round(source.getWidth() * scale));
+        int scaledHeight = Math.max(1, (int) Math.round(source.getHeight() * scale));
+        BufferedImage scaled = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_3BYTE_BGR);
+        Graphics2D graphics = scaled.createGraphics();
+        try {
+            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+            graphics.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+            graphics.drawImage(source, 0, 0, scaledWidth, scaledHeight, null);
+        } finally {
+            graphics.dispose();
+        }
+        return scaled;
+    }
+
+    private static byte[] encodeFrame(BufferedImage frame, ImageQuality quality) throws IOException {
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(quality.getFormatName());
+        if (!writers.hasNext()) {
+            throw new IOException("No ImageIO writer found for format " + quality.getFormatName());
+        }
+
+        ImageWriter writer = writers.next();
+        ImageWriteParam writeParam = writer.getDefaultWriteParam();
+        if (writeParam.canWriteCompressed()) {
+            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            writeParam.setCompressionQuality(quality.getCompressionQuality());
+        }
+
+        int estimatedSize = Math.max(32_768, frame.getWidth() * frame.getHeight() / 3);
+        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream(estimatedSize);
+             MemoryCacheImageOutputStream imageOutput = new MemoryCacheImageOutputStream(buffer)) {
+            writer.setOutput(imageOutput);
+            writer.write(null, new javax.imageio.IIOImage(frame, null, null), writeParam);
+            imageOutput.flush();
+            return buffer.toByteArray();
+        } finally {
+            writer.dispose();
+        }
     }
 }
