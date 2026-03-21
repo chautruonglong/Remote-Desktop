@@ -6,6 +6,7 @@
 
 # Compiled output
 out/
+target/
 *.class
 *.jar
 !lib/*.jar

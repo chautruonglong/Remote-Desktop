@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.remotedesktop</groupId>
+    <artifactId>remote-desktop</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>Remote Desktop</name>
+
+    <properties>
+        <maven.compiler.release>15</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jdeli.version>trial</jdeli.version>
+    </properties>
+
+    <dependencies>
+        <!--
+            jdeli-trial.jar is a local library not available in Maven Central.
+            It is installed to the local Maven repository automatically during
+            the validate phase by the maven-install-plugin below.
+        -->
+        <dependency>
+            <groupId>com.idrsolutions</groupId>
+            <artifactId>jdeli</artifactId>
+            <version>${jdeli.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Install the local jdeli jar into the local Maven repo before compilation. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>install-jdeli</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.basedir}/lib/jdeli-trial.jar</file>
+                            <groupId>com.idrsolutions</groupId>
+                            <artifactId>jdeli</artifactId>
+                            <version>${jdeli.version}</version>
+                            <packaging>jar</packaging>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Build an executable fat jar with all dependencies bundled. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>Application</mainClass>
+                                </transformer>
+                            </transformers>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
