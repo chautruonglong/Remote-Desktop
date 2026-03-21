@@ -11,6 +11,7 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.filechooser.FileSystemView;
 
@@ -164,13 +165,13 @@ public class RemoteDesktopImpl extends UnicastRemoteObject implements IRemoteDes
      */
     @Override
     public ComputerInfo getComputerInfo() throws RemoteException {
-        ComputerInfo info = new ComputerInfo(this.osBean.getName());
+        var drives = new ArrayList<DriveInfo>();
         for (File root : File.listRoots()) {
             String displayName = FileSystemView.getFileSystemView().getSystemDisplayName(root);
             long freeGb  = root.getFreeSpace()  / BYTES_PER_GB;
             long totalGb = root.getTotalSpace()  / BYTES_PER_GB;
-            info.getDrives().add(new DriveInfo(displayName, freeGb, totalGb));
+            drives.add(new DriveInfo(displayName, freeGb, totalGb));
         }
-        return info;
+        return new ComputerInfo(this.osBean.getName(), drives);
     }
 }

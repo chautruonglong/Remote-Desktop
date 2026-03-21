@@ -39,9 +39,11 @@ public enum Tab {
      * @return the matching {@code Tab}, or {@code null} if none matches
      */
     public static Tab fromIndex(int index) {
-        for (Tab tab : values()) {
-            if (tab.index == index) return tab;
-        }
-        return null;
+        return switch (index) {
+            case 1 -> CLIENT;
+            case 2 -> SERVER;
+            case 3 -> CHAT;
+            default -> null;
+        };
     }
 }

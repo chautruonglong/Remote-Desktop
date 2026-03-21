@@ -41,7 +41,7 @@ public class FileLabel extends JLabel {
         this.fileMessage = fileMessage;
 
         this.setText(
-            this.fileMessage.getSender() + " sent a file: <U>" + this.fileMessage.getFileName() + "</U>"
+            this.fileMessage.sender() + " sent a file: <U>" + this.fileMessage.fileName() + "</U>"
         );
         this.setFont(new Font(AppStyles.FONT_MONO, Font.ITALIC, NORMAL_SIZE));
 
@@ -86,14 +86,14 @@ public class FileLabel extends JLabel {
 
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(FileSystemView.getFileSystemView().getHomeDirectory());
-        fileChooser.setSelectedFile(new File(this.fileMessage.getFileName()));
+        fileChooser.setSelectedFile(new File(this.fileMessage.fileName()));
         fileChooser.showSaveDialog(this);
 
         File destination = fileChooser.getSelectedFile();
         if (destination == null) return;
 
         try (FileOutputStream fos = new FileOutputStream(destination)) {
-            fos.write(this.fileMessage.getFileData());
+            fos.write(this.fileMessage.fileData());
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(null, "Could not save file:\n" + ex.getMessage());
         }

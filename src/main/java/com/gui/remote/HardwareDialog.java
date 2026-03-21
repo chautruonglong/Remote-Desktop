@@ -73,8 +73,7 @@ public class HardwareDialog extends JDialog implements Runnable {
 
         this.initComponents();
 
-        this.updateThread = new Thread(this);
-        this.updateThread.setDaemon(true);
+        this.updateThread = Thread.ofPlatform().daemon().name("hardware-monitor").unstarted(this);
         this.updateThread.start();
     }
 

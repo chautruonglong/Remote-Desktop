@@ -160,7 +160,7 @@ public class ClientPanel extends JPanel {
         this.setEnabled(false);
         this.loaderLabel.setVisible(true);
 
-        Thread connectThread = new Thread(() -> {
+        Thread.ofPlatform().daemon().name("remote-connect").start(() -> {
             try {
                 String host     = this.mainPanel.getHostTextField().getText().trim();
                 int    port     = Integer.parseInt(this.mainPanel.getPortTextField().getText().trim());
@@ -195,7 +195,5 @@ public class ClientPanel extends JPanel {
                 this.loaderLabel.setVisible(false);
             }
         });
-        connectThread.setDaemon(true);
-        connectThread.start();
     }
 }

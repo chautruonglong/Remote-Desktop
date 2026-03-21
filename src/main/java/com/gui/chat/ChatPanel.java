@@ -89,9 +89,7 @@ public class ChatPanel extends JPanel implements Runnable {
 
         this.initComponents();
 
-        Thread receiveThread = new Thread(this);
-        receiveThread.setDaemon(true);
-        receiveThread.start();
+        Thread.ofPlatform().daemon().name("chat-receiver").start(this);
     }
 
     private void initComponents() {
@@ -271,14 +269,13 @@ public class ChatPanel extends JPanel implements Runnable {
         this.loaderLabel.setVisible(true);
         this.setEnabled(false);
 
-        Thread sendThread = getSendThread(selectedFile);
-        sendThread.start();
+        startFileSend(selectedFile);
     }
 
-    private Thread getSendThread(File selectedFile) {
-        Thread sendThread = new Thread(() -> {
+    private void startFileSend(File selectedFile) {
+        Thread.ofPlatform().daemon().name("chat-file-send").start(() -> {
             try (FileInputStream fis = new FileInputStream(selectedFile)) {
-                FileMessage fileMessage = new FileMessage(
+                var fileMessage = new FileMessage(
                     this.localHostName,
                     selectedFile.getName(),
                     selectedFile.length(),
@@ -287,8 +284,9 @@ public class ChatPanel extends JPanel implements Runnable {
                 this.chatBus.sendMessage(fileMessage);
 
                 int rightGap = this.scrollPanel.getWidth() - 180;
-                fileMessage.setSender("You");
-                FileLabel fileLabel = new FileLabel(fileMessage);
+                var fileLabel = new FileLabel(
+                    new FileMessage("You", fileMessage.fileName(), fileMessage.fileLength(), fileMessage.fileData())
+                );
                 addMessageToPanel(fileLabel, rightGap, "green");
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(null, "Could not send file:\n" + ex.getMessage());
@@ -297,8 +295,6 @@ public class ChatPanel extends JPanel implements Runnable {
                 this.loaderLabel.setVisible(false);
             }
         });
-        sendThread.setDaemon(true);
-        return sendThread;
     }
 
     // -------------------------------------------------------------------------
@@ -403,17 +399,14 @@ public class ChatPanel extends JPanel implements Runnable {
         while (true) {
             try {
                 Message message = this.chatBus.receiveMessage();
-                if (message instanceof StringMessage) {
-                    StringMessage stringMessage = (StringMessage) message;
-                    JLabel label = new JLabel(
-                        stringMessage.getSender() + " sent a message:" + stringMessage.getContent()
-                    );
-                    label.setFont(new Font(AppStyles.FONT_MONO, Font.PLAIN, 14));
-                    label.setForeground(Color.BLACK);
-                    addMessageToPanel(label, 0, "blue");
-                } else if (message instanceof FileMessage) {
-                    FileMessage fileMessage = (FileMessage) message;
-                    addMessageToPanel(new FileLabel(fileMessage), 0, "blue");
+                switch (message) {
+                    case StringMessage(var sender, var content) -> {
+                        JLabel label = new JLabel(sender + " sent a message:" + content);
+                        label.setFont(new Font(AppStyles.FONT_MONO, Font.PLAIN, 14));
+                        label.setForeground(Color.BLACK);
+                        addMessageToPanel(label, 0, "blue");
+                    }
+                    case FileMessage fileMessage -> addMessageToPanel(new FileLabel(fileMessage), 0, "blue");
                 }
             } catch (Exception e) {
                 handleDisconnect();

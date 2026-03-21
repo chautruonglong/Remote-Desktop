@@ -116,8 +116,7 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.initComponents();
         this.setupDisplayGeometry();
 
-        this.screenThread = new Thread(this);
-        this.screenThread.setDaemon(true);
+        this.screenThread = Thread.ofPlatform().daemon().name("remote-screen-stream").unstarted(this);
         this.screenThread.start();
     }
 

@@ -61,7 +61,7 @@ public class DrivesInfoPanel extends JPanel {
             int y = 5;
 
             // OS name label.
-            JLabel osLabel = new JLabel("Operating System: " + pcInfo.getOsName());
+            JLabel osLabel = new JLabel("Operating System: " + pcInfo.osName());
             osLabel.setFont(new Font(AppStyles.FONT_UI, Font.BOLD | Font.ITALIC, 17));
             osLabel.setForeground(Color.BLUE);
             osLabel.setBounds(PADDING, y, HardwareDialog.WIDTH_DIALOG - 100, OS_LABEL_HEIGHT);
@@ -69,14 +69,14 @@ public class DrivesInfoPanel extends JPanel {
             y += OS_LABEL_HEIGHT + 10;
 
             // One row per drive.
-            for (DriveInfo drive : pcInfo.getDrives()) {
-                long totalGb = drive.getTotalSpaceGb();
-                long usedGb  = totalGb - drive.getFreeSpaceGb();
+            for (DriveInfo drive : pcInfo.drives()) {
+                long totalGb = drive.totalSpaceGb();
+                long usedGb  = totalGb - drive.freeSpaceGb();
 
                 // Drive name + usage text label with HDD icon.
                 String driveText =
                     "<html>" +
-                    "<font color=\"blue\">" + drive.getName() + "<br></font>" +
+                    "<font color=\"blue\">" + drive.name() + "<br></font>" +
                     " (Used " + usedGb + " GB of " + totalGb + " GB)" +
                     "</html>";
                 JLabel driveLabel = new JLabel(driveText);

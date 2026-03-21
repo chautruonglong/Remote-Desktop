@@ -135,8 +135,7 @@ public class ServerPanel extends JPanel implements Runnable {
 
             this.commonBus.startServer(host, port, password);
 
-            this.listenThread = new Thread(this);
-            this.listenThread.setDaemon(true);
+            this.listenThread = Thread.ofPlatform().daemon().name("server-listener").unstarted(this);
             this.listenThread.start();
 
             this.mainPanel.setEnabled(false);
