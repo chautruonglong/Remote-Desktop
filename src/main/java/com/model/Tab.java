@@ -8,13 +8,13 @@ package com.model;
  */
 public enum Tab {
 
-    /** The client tab — lets the user connect to a remote server. */
+    /** The client tab lets the user connect to a remote server. */
     CLIENT(1),
 
-    /** The server tab — lets the user start listening for incoming connections. */
+    /** The server tab lets the user start listening for incoming connections. */
     SERVER(2),
 
-    /** The chat tab — shows all active connection sessions. */
+    /** The chat tab shows all active connection sessions. */
     CHAT(3);
 
     private final int index;

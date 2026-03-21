@@ -9,9 +9,9 @@ import java.net.Socket;
  * Wraps a connected {@link Socket} to provide typed, object-level message exchange.
  *
  * <p>The underlying {@link ObjectOutputStream} and {@link ObjectInputStream} are created
- * <em>once</em> per connection and reused for all subsequent send/receive calls. Recreating
+ * <em>once</em> per connection and reused for all later send/receive calls. Recreating
  * these streams on each call would write duplicate serialization headers and corrupt the
- * stream state, so sharing them is required for correct operation.</p>
+ * stream state, so sharing them is required for the correct operation.</p>
  *
  * <p><strong>Construction ordering:</strong> Both endpoints must create their
  * {@code ObjectOutputStream} (and flush it) before creating their {@code ObjectInputStream}.
@@ -49,12 +49,12 @@ public class ChatBus {
     /**
      * Sends a {@link Message} to the remote peer.
      *
-     * <p>{@link ObjectOutputStream#reset()} is called after each write to prevent the
+     * <p>{@link ObjectOutputStream#reset()} is called after each writing to prevent the
      * object stream from caching previously serialized references, which would otherwise
      * cause stale data to be sent on repeated messages of the same object.</p>
      *
      * @param message the message to send; must not be {@code null}
-     * @throws IOException if the write fails or the connection is closed
+     * @throws IOException if the writing fails or the connection is closed
      */
     public void sendMessage(Message message) throws IOException {
         outputStream.writeObject(message);

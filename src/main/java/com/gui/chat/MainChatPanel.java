@@ -116,7 +116,7 @@ public class MainChatPanel extends JPanel {
      * Adjusts the connection counter by {@code delta} and refreshes the label.
      * Pass {@code +1} when a connection opens and {@code -1} when it closes.
      *
-     * @param delta the amount to add to the current count (may be negative)
+     * @param delta the amount to add to the current count (maybe negative)
      */
     public void adjustConnectionCount(int delta) {
         this.connectionCount += delta;

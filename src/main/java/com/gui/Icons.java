@@ -1,6 +1,7 @@
 package com.gui;
 
 import javax.swing.ImageIcon;
+import java.util.Objects;
 
 /**
  * Central registry of all application icon resources.
@@ -47,6 +48,6 @@ public final class Icons {
     private Icons() {}
 
     private static ImageIcon load(String resourceName) {
-        return new ImageIcon(Icons.class.getClassLoader().getResource(resourceName));
+        return new ImageIcon(Objects.requireNonNull(Icons.class.getClassLoader().getResource(resourceName)));
     }
 }

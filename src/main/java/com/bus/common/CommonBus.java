@@ -42,7 +42,7 @@ public class CommonBus {
     }
 
     /**
-     * Initialises the TCP transports with the given chat panel.
+     * Initializes the TCP transports with the given chat panel.
      *
      * <p>Must be called once after construction and before any start/stop operations.</p>
      *

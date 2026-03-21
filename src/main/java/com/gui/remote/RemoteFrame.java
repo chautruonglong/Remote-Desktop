@@ -49,7 +49,7 @@ public class RemoteFrame extends JFrame implements Runnable {
      */
     private float scaleY;
 
-    private volatile Thread screenThread;
+    private final Thread screenThread;
 
     /**
      * Creates and opens the remote desktop viewing window.
@@ -171,7 +171,7 @@ public class RemoteFrame extends JFrame implements Runnable {
 
         this.add(this.screenLabel);
 
-        // Menu bar with "Show monitor" option.
+        // Menu bar with the "Show monitor" option.
         this.menuBar.setLayout(new GridBagLayout());
         this.menuBar.setBackground(Color.decode("0x9A9A9A"));
         this.menuBar.setPreferredSize(new Dimension(0, 25));
@@ -218,14 +218,14 @@ public class RemoteFrame extends JFrame implements Runnable {
         int availHeight = localScreen.height - (taskbarInsets.top  + taskbarInsets.bottom + frameInsets.top + this.menuBar.getPreferredSize().height);
 
         if (availWidth > screenshot.getWidth() && availHeight > screenshot.getHeight()) {
-            // Server screen is smaller — centre it with no scaling.
+            // The server screen is smaller — center it with no scaling.
             int hGap = (availWidth  - screenshot.getWidth())  / 2;
             int vGap = (availHeight - screenshot.getHeight()) / 2;
             this.scaleX = 1f;
             this.scaleY = 1f;
             this.screenLabel.setBounds(hGap, vGap, screenshot.getWidth(), screenshot.getHeight());
         } else {
-            // Server screen is larger — scale to fit, preserving aspect ratio.
+            // The server screen is larger — scale to fit, preserving an aspect ratio.
             float ratio      = (float) screenshot.getWidth() / screenshot.getHeight();
             int scaledWidth  = (int) (ratio * availHeight);
             int hGap         = (availWidth - scaledWidth) / 2;
@@ -251,7 +251,7 @@ public class RemoteFrame extends JFrame implements Runnable {
                 this.screenLabel.setIcon(new ImageIcon(scaled));
             }
         } catch (Exception e) {
-            // Connection dropped or session ended — fall through to dispose.
+            // Connection dropped, or session ended — fall through to dispose.
         } finally {
             this.dispose();
         }

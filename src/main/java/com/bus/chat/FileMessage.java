@@ -21,7 +21,7 @@ public class FileMessage extends Message {
      * Creates a new file-transfer message.
      *
      * @param sender     the hostname or display name of the sender
-     * @param fileName   the original name of the file (without path)
+     * @param fileName   the original name of the file (without a path)
      * @param fileLength the size of the file in bytes
      * @param fileData   the raw binary content of the file
      */
@@ -34,7 +34,7 @@ public class FileMessage extends Message {
     }
 
     /**
-     * Returns the original file name (without directory path).
+     * Returns the original file name (without a directory path).
      *
      * @return the file name
      */

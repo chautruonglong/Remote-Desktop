@@ -6,14 +6,14 @@ import java.util.List;
 import javax.swing.JPanel;
 
 /**
- * A real-time line graph that visualises a percentage-valued metric over time (e.g., CPU or RAM
+ * A real-time line graph that visualizes a percentage-valued metric over time (e.g., CPU or RAM
  * usage).
  *
  * <p>Values between {@code 0.0} and {@code 1.0} are pushed via {@link #addValue(double)}.
  * Each call appends a new data point and triggers a repaint. Older data points that scroll
  * off the left edge of the graph are automatically removed to bound memory usage.</p>
  *
- * <p>The graph displays a labelled border, percentage grid lines, and the current reading
+ * <p>The graph displays a labeled border, percentage grid lines, and the current reading
  * as a percentage annotation on the right edge.</p>
  *
  * <p>{@link #paintComponent(Graphics)} is overridden (rather than {@code paint}) so Swing's
@@ -113,14 +113,14 @@ public class HardwareGraph extends JPanel {
             }
         }
 
-        // Draw graph border rectangle.
+        // Draw a graph border rectangle.
         g2d.setColor(Color.decode("0x117DBB"));
         g2d.setStroke(new BasicStroke(1.5f));
         g2d.drawRect(this.graphBounds.x, this.graphBounds.y, this.graphBounds.width, this.graphBounds.height);
 
         // Draw the data line.
         if (this.dataPoints.size() > 1) {
-            // Remove oldest points that would render outside the left edge.
+            // Remove the oldest points that would render outside the left edge.
             int pointSpacing = GRID_SPACING / 4;
             int startX = this.graphBounds.x + this.graphBounds.width - (this.dataPoints.size() - 1) * pointSpacing;
             while (startX < this.graphBounds.x) {

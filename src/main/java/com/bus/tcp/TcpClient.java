@@ -39,7 +39,7 @@ public class TcpClient {
      * Connects to the server at {@code host:port}, authenticates with {@code password},
      * and on success opens a {@link ChatBus} session.
      *
-     * <p>If the password is rejected by the server, the socket is closed and an
+     * <p>If the server rejects the password, the socket is closed and an
      * {@link IOException} is thrown. Does nothing if already connected.</p>
      *
      * @param host     the server hostname or IP address
@@ -93,7 +93,7 @@ public class TcpClient {
 
     /**
      * Overrides the connection state flag. Use this when the connection is known to have
-     * dropped externally (e.g., detected by the receive thread).
+     * dropped externally (e.g., detected by the receiver thread).
      *
      * @param connected the new connection state
      */

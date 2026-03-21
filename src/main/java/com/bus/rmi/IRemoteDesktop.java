@@ -13,7 +13,7 @@ import java.rmi.RemoteException;
  * from the imaging pipeline.</p>
  *
  * <p>Method naming convention: these are operations the <em>client</em> requests the
- * <em>server</em> to perform — the "Server" suffix has been dropped in favour of concise,
+ * <em>server</em> to perform — the "Server" suffix has been dropped in favor of concise,
  * verb-first names (e.g., {@link #captureScreen}, {@link #moveMouse}).</p>
  */
 public interface IRemoteDesktop extends Remote {
@@ -94,7 +94,7 @@ public interface IRemoteDesktop extends Remote {
     // -------------------------------------------------------------------------
 
     /**
-     * Returns the server's current CPU utilisation as a value between {@code 0.0} and {@code 1.0}.
+     * Returns the server's current CPU utilization as a value between {@code 0.0} and {@code 1.0}.
      *
      * @return CPU load ratio
      * @throws RemoteException on network error
@@ -102,7 +102,7 @@ public interface IRemoteDesktop extends Remote {
     double getCpuLoad() throws RemoteException;
 
     /**
-     * Returns the server's current RAM utilisation as a value between {@code 0.0} and {@code 1.0}.
+     * Returns the server's current RAM utilization as a value between {@code 0.0} and {@code 1.0}.
      *
      * @return RAM usage ratio (used / total)
      * @throws RemoteException on network error
