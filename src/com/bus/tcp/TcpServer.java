@@ -18,7 +18,7 @@ import java.util.List;
  * a {@link ChatBus} session is opened and registered with the shared {@link MainChatPanel}.</p>
  *
  * <p>Only one client connection is tracked at a time ({@link #hasConnectedClient()}).
- * Threading (the accept loop) is the responsibility of the calling UI panel.</p>
+ * Threading (the acceptance loop) is the responsibility of the calling UI panel.</p>
  */
 public class TcpServer {
 
@@ -152,7 +152,7 @@ public class TcpServer {
 
     /**
      * Overrides the connected-client flag. Use this when the client is known to have
-     * disconnected externally (e.g., detected by the receive thread).
+     * disconnected externally (e.g., detected by the receiver thread).
      *
      * @param hasConnectedClient the new state
      */

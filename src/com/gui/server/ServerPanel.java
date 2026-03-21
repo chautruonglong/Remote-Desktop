@@ -1,6 +1,7 @@
 package com.gui.server;
 
 import com.bus.common.CommonBus;
+import com.bus.tcp.TcpServer;
 import com.gui.Icons;
 import com.gui.MainFrame;
 import com.gui.client.ClientPanel;
@@ -12,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.SocketException;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -76,7 +78,7 @@ public class ServerPanel extends JPanel implements Runnable {
                 try {
                     mainPanel.getHostCombo().removeAllItems();
                     mainPanel.getHostCombo().addItem("0.0.0.0");
-                    List<String> localAddresses = commonBus.getTcpServer().getLocalIpv4Addresses();
+                    List<String> localAddresses = TcpServer.getLocalIpv4Addresses();
                     for (String address : localAddresses) {
                         mainPanel.getHostCombo().addItem(address);
                     }
@@ -134,7 +136,7 @@ public class ServerPanel extends JPanel implements Runnable {
         if (e.getButton() != MouseEvent.BUTTON1 || !this.listenLabel.isEnabled()) return;
 
         try {
-            String host     = this.mainPanel.getHostCombo().getSelectedItem().toString().trim();
+            String host     = Objects.requireNonNull(this.mainPanel.getHostCombo().getSelectedItem()).toString().trim();
             int    port     = Integer.parseInt(this.mainPanel.getPortTextField().getText().trim());
             String password = this.mainPanel.getPasswordTextField().getText().trim();
 

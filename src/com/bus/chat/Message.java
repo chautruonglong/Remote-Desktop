@@ -1,5 +1,6 @@
 package com.bus.chat;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -17,7 +18,7 @@ import java.io.Serializable;
  * </pre>
  */
 public abstract class Message implements Serializable {
-
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /** Type constant indicating a plain-text message. Prefer {@code instanceof StringMessage}. */

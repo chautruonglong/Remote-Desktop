@@ -12,15 +12,15 @@ import javax.swing.JLabel;
  *
  * <p>Provides two font size states — "big" (active/selected tab) and "small" (inactive tab) —
  * and automatically bolds its font on mouse hover to give interactive feedback. The hover
- * behaviour is handled internally so subclasses and callers need not wire their own listeners
+ * behavior is handled internally, so subclasses and callers need not wire their own listeners
  * for this effect.</p>
  *
- * <p>The foreground colour ({@link #FOREGROUND_COLOR}) matches the tab bar palette. Labels
+ * <p>The foreground color ({@link #FOREGROUND_COLOR}) matches the tab bar palette. Labels
  * start in the small (inactive) state.</p>
  */
 public class CommonLabel extends JLabel {
 
-    /** Hex colour string for the label foreground, matching the tab bar palette. */
+    /** Hex color string for the label foreground, matching the tab bar palette. */
     public static final String FOREGROUND_COLOR = "0x99A7FF";
 
     /** Font size for the currently active (selected) tab label. */
@@ -70,7 +70,7 @@ public class CommonLabel extends JLabel {
 
     /**
      * Resets the font to plain weight while keeping the current size.
-     * Useful when re-enabling a label that may have been left in bold state.
+     * Useful when re-enabling a label that may have been left in the bold state.
      */
     public void resetFont() {
         int currentSize = this.getFont().getSize();
@@ -78,7 +78,7 @@ public class CommonLabel extends JLabel {
     }
 
     // -------------------------------------------------------------------------
-    // Internal hover handlers — bold on enter, plain on exit
+    // Internal hover handlers — bold on entrance, plain on exit
     // -------------------------------------------------------------------------
 
     private void onMouseEntered(MouseEvent e) {

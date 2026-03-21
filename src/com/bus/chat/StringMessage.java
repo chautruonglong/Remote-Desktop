@@ -1,12 +1,14 @@
 package com.bus.chat;
 
+import java.io.Serial;
+
 /**
  * A {@link Message} that carries a plain-text string payload.
  *
  * <p>Used to send chat text from one peer to another during a remote desktop session.</p>
  */
 public class StringMessage extends Message {
-
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final String content;

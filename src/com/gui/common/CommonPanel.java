@@ -20,7 +20,7 @@ import javax.swing.border.TitledBorder;
  * side (so the admin can read the password they set) and as a {@link JPasswordField}
  * on the client side (so the typed password is masked).</p>
  *
- * <p>Callers customise the panel title, label text, and which controls are visible
+ * <p>Callers customize the panel title, label text, and which controls are visible
  * after construction.</p>
  */
 public class CommonPanel extends JPanel {
@@ -40,7 +40,7 @@ public class CommonPanel extends JPanel {
 
     /**
      * Creates a new {@code CommonPanel} with default "Server Listening" border title.
-     * Parent panels should change the border title and customise visible controls
+     * Parent panels should change the border title and customize visible controls
      * immediately after construction.
      */
     public CommonPanel() {
@@ -163,7 +163,7 @@ public class CommonPanel extends JPanel {
 
     /**
      * Returns the plain-text password field used on the server panel.
-     * The password is visible so the admin can confirm what was set.
+     * The password is visible, so the admin can confirm what was set.
      */
     public JTextField getPasswordTextField() { return passwordTextField; }
 

@@ -22,15 +22,15 @@ import javax.swing.border.TitledBorder;
  * and clicks "Connect now". The connection is established on a background thread to avoid
  * blocking the EDT. On success a {@link RemoteFrame} is opened.</p>
  *
- * <p>Colour constants ({@link #BACKGROUND}, {@link #FOREGROUND}) are shared with other
- * panels so the application maintains a consistent colour scheme.</p>
+ * <p>Color constants ({@link #BACKGROUND}, {@link #FOREGROUND}) are shared with other
+ * panels so the application maintains a consistent color scheme.</p>
  */
 public class ClientPanel extends JPanel {
 
-    /** Hex colour string for the panel background — used by other panels for consistency. */
+    /** Hex color string for the panel background — used by other panels for consistency. */
     public static final String BACKGROUND = "0x00A571";
 
-    /** Hex colour string for the panel foreground text — used by other panels for consistency. */
+    /** Hex color string for the panel foreground text — used by other panels for consistency. */
     public static final String FOREGROUND = "0x003927";
 
     private static final String FONT_FAMILY = "segoe ui";
@@ -78,7 +78,7 @@ public class ClientPanel extends JPanel {
         ));
         this.add(this.mainPanel);
 
-        // Customise shared panel labels for the client perspective.
+        // Customize shared panel labels for the client perspective.
         this.mainPanel.getHostLabel().setText("Remote IP:");
         this.mainPanel.getPortLabel().setText("Remote port:");
         this.mainPanel.getPasswordLabel().setText("Password:");
@@ -87,7 +87,7 @@ public class ClientPanel extends JPanel {
         this.mainPanel.getHostCombo().setVisible(false);
         this.mainPanel.getHostTextField().setVisible(true);
 
-        // Show masked password field; hide plain text field.
+        // Show the masked password field; hide the plain text field.
         this.mainPanel.getPasswordTextField().setVisible(false);
         this.mainPanel.getPasswordField().setVisible(true);
 

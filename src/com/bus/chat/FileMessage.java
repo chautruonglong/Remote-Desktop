@@ -1,5 +1,7 @@
 package com.bus.chat;
 
+import java.io.Serial;
+
 /**
  * A {@link Message} that carries a binary file as its payload.
  *
@@ -8,7 +10,7 @@ package com.bus.chat;
  * size limit before constructing this object.</p>
  */
 public class FileMessage extends Message {
-
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final String fileName;
