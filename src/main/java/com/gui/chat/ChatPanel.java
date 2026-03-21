@@ -32,18 +32,18 @@ import javax.swing.filechooser.FileSystemView;
  * A background daemon thread continuously reads incoming {@link Message}s from the bus and
  * appends them to the history panel.</p>
  *
- * <p>When the connection drops (detected by the receive thread catching an exception), all
+ * <p>When the connection drops (detected by the receiver thread catching an exception), all
  * associated UI components are cleaned up and the parent {@link MainChatPanel} is notified.</p>
  *
  * <p>The local hostname is resolved once at construction and cached to avoid repeated
- * blocking DNS lookups during message sends.</p>
+ * blocking DNS lookups during a message sent.</p>
  *
  * <p>File sends are limited to {@value #MAX_FILE_SIZE_BYTES} bytes. Files are read and
  * transferred on a daemon thread so the EDT is not blocked.</p>
  */
 public class ChatPanel extends JPanel implements Runnable {
 
-    /** Background colour for the message history area. */
+    /** Background color for the message history area. */
     public static final String CONTENT_BACKGROUND = "0xFFFFFF";
 
     /** Maximum characters per line before wrapping in the history display. */
@@ -277,6 +277,11 @@ public class ChatPanel extends JPanel implements Runnable {
         this.loaderLabel.setVisible(true);
         this.setEnabled(false);
 
+        Thread sendThread = getSendThread(selectedFile);
+        sendThread.start();
+    }
+
+    private Thread getSendThread(File selectedFile) {
         Thread sendThread = new Thread(() -> {
             try (FileInputStream fis = new FileInputStream(selectedFile)) {
                 FileMessage fileMessage = new FileMessage(
@@ -299,7 +304,7 @@ public class ChatPanel extends JPanel implements Runnable {
             }
         });
         sendThread.setDaemon(true);
-        sendThread.start();
+        return sendThread;
     }
 
     // -------------------------------------------------------------------------
@@ -309,13 +314,13 @@ public class ChatPanel extends JPanel implements Runnable {
     /**
      * Adds a message label to the scrollable history panel on the EDT.
      *
-     * <p>The label text is formatted with a coloured header line and line-wrapped body.
-     * After adding, the scroll position is set to the bottom so the newest message is
+     * <p>The label text is formatted with a colored header line and line-wrapped body.
+     * After adding, the scroll position is set to the bottom, so the newest message is
      * always visible.</p>
      *
-     * @param label       the label to add (may be a plain {@link JLabel} or a {@link FileLabel})
+     * @param label       the label to add (maybe a plain {@link JLabel} or a {@link FileLabel})
      * @param rightGap    horizontal gap from the right (larger for sent, 0 for received)
-     * @param headerColor HTML colour string for the sender header (e.g., {@code "green"} or {@code "blue"})
+     * @param headerColor HTML color string for the sender header (e.g., {@code "green"} or {@code "blue"})
      */
     public void addMessageToPanel(JLabel label, int rightGap, String headerColor) {
         EventQueue.invokeLater(() -> {
@@ -334,10 +339,10 @@ public class ChatPanel extends JPanel implements Runnable {
     }
 
     /**
-     * Wraps a raw message string in HTML with a coloured sender header and line-broken body.
+     * Wraps a raw message string in HTML with a colored sender header and line-broken body.
      *
      * @param rawText     the original label text
-     * @param headerColor the HTML colour name for the header
+     * @param headerColor the HTML color name for the header
      * @return an HTML string suitable for use in a {@link JLabel}
      */
     private static String formatMessage(String rawText, String headerColor) {
@@ -346,7 +351,7 @@ public class ChatPanel extends JPanel implements Runnable {
 
     /**
      * Extracts the portion of {@code text} up to and including the first colon, wraps it
-     * in a coloured HTML {@code <font>} tag, and appends a line break.
+     * in a colored HTML {@code <font>} tag, and appends a line break.
      * Returns an empty string if no colon is present.
      */
     private static String buildHeader(String text, String color) {
@@ -376,7 +381,7 @@ public class ChatPanel extends JPanel implements Runnable {
     /**
      * Scrolls the message history to the bottom. Called twice in succession because Swing's
      * layout may not have completed the first time, and the second call ensures the scroll
-     * bar maximum is up-to-date.
+     * bar maximum is up to date.
      */
     private void scrollToBottom() {
         this.scrollPanel.getViewport().setViewPosition(
@@ -392,33 +397,29 @@ public class ChatPanel extends JPanel implements Runnable {
     // -------------------------------------------------------------------------
 
     /**
-     * Background receive loop — blocks on {@link ChatBus#receiveMessage()} and dispatches
-     * each received message to the history panel.
+     * Background receive loop — blocks on {@link ChatBus#receiveMessage()} until a message
+     * arrives or the connection drops.
      *
-     * <p>If neither server nor client is active, the thread sleeps 1 second between checks
-     * to avoid busy-waiting. When an exception is thrown (connection dropped), the session
-     * is cleaned up and the loop exits.</p>
+     * <p>{@link ChatBus#receiveMessage()} is a blocking call; the thread does not spin.
+     * When an exception is thrown (connection dropped or interrupted), the session is
+     * cleaned up and the loop exits.</p>
      */
     @Override
     public void run() {
         while (true) {
             try {
-                if (this.commonBus.hasConnectedClient() || this.commonBus.isClientConnected()) {
-                    Message message = this.chatBus.receiveMessage();
-                    if (message instanceof StringMessage) {
-                        StringMessage stringMessage = (StringMessage) message;
-                        JLabel label = new JLabel(
-                            stringMessage.getSender() + " sent a message:" + stringMessage.getContent()
-                        );
-                        label.setFont(new Font(FONT_FAMILY_MONO, Font.PLAIN, 14));
-                        label.setForeground(Color.BLACK);
-                        addMessageToPanel(label, 0, "blue");
-                    } else if (message instanceof FileMessage) {
-                        FileMessage fileMessage = (FileMessage) message;
-                        addMessageToPanel(new FileLabel(fileMessage), 0, "blue");
-                    }
-                } else {
-                    Thread.sleep(1000);
+                Message message = this.chatBus.receiveMessage();
+                if (message instanceof StringMessage) {
+                    StringMessage stringMessage = (StringMessage) message;
+                    JLabel label = new JLabel(
+                        stringMessage.getSender() + " sent a message:" + stringMessage.getContent()
+                    );
+                    label.setFont(new Font(FONT_FAMILY_MONO, Font.PLAIN, 14));
+                    label.setForeground(Color.BLACK);
+                    addMessageToPanel(label, 0, "blue");
+                } else if (message instanceof FileMessage) {
+                    FileMessage fileMessage = (FileMessage) message;
+                    addMessageToPanel(new FileLabel(fileMessage), 0, "blue");
                 }
             } catch (Exception e) {
                 handleDisconnect();

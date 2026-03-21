@@ -4,6 +4,9 @@ import com.bus.rmi.IRemoteDesktop;
 import com.gui.Icons;
 import java.awt.Dimension;
 import java.rmi.RemoteException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -12,14 +15,15 @@ import javax.swing.JScrollPane;
  * Modal-less dialog that shows live CPU usage, RAM usage, and disk drive information
  * fetched from the remote server via RMI.
  *
- * <p>A background daemon thread polls the remote hardware metrics every 500 ms and
- * pushes the values into the two {@link HardwareGraph} panels and the
- * {@link DrivesInfoPanel}. The thread is interrupted when the dialog is disposed.</p>
+ * <p>A {@link ScheduledExecutorService} polls the remote hardware metrics every
+ * {@value #POLL_INTERVAL_MS} ms and pushes the values into the two {@link HardwareGraph}
+ * panels and the {@link DrivesInfoPanel}. The scheduler is shut down when the dialog
+ * is disposed.</p>
  *
  * <p>RAM and processor counts are fetched once at construction time (they rarely change)
  * and used to label the graphs. Drive and CPU/RAM usage data is fetched on every poll.</p>
  */
-public class HardwareDialog extends JDialog implements Runnable {
+public class HardwareDialog extends JDialog {
 
     /** Fixed dialog width in pixels. */
     public static final int WIDTH_DIALOG  = 500;
@@ -38,7 +42,7 @@ public class HardwareDialog extends JDialog implements Runnable {
     private DrivesInfoPanel drivesInfoPanel;
 
     private final IRemoteDesktop remoteDesktop;
-    private final Thread updateThread;
+    private final ScheduledExecutorService scheduler;
 
     private final long totalRamGb;
     private final long totalSwapGb;
@@ -48,7 +52,7 @@ public class HardwareDialog extends JDialog implements Runnable {
      * Creates and starts a hardware monitoring dialog.
      *
      * <p>Fetches the static hardware profile (processor count and RAM capacity) immediately
-     * via RMI, then starts the polling thread.</p>
+     * via RMI, then starts the polling scheduler.</p>
      *
      * @param owner         the parent frame that owns this dialog
      * @param remoteDesktop the RMI stub used to query the server's hardware
@@ -73,9 +77,12 @@ public class HardwareDialog extends JDialog implements Runnable {
 
         this.initComponents();
 
-        this.updateThread = new Thread(this);
-        this.updateThread.setDaemon(true);
-        this.updateThread.start();
+        this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        });
+        this.scheduler.scheduleAtFixedRate(this::pollHardware, 0, POLL_INTERVAL_MS, TimeUnit.MILLISECONDS);
     }
 
     private void initComponents() {
@@ -106,33 +113,27 @@ public class HardwareDialog extends JDialog implements Runnable {
     }
 
     /**
-     * Background polling loop — fetches CPU load, RAM usage, and drive info every
-     * {@link #POLL_INTERVAL_MS} milliseconds. Stops if interrupted or a remote error occurs.
+     * Fetches CPU load, RAM usage, and drive info from the server and updates the graphs.
+     * Called by the scheduler every {@link #POLL_INTERVAL_MS} milliseconds.
+     * Shuts down the scheduler and hides the dialog if a remote error occurs.
      */
-    @Override
-    public void run() {
+    private void pollHardware() {
         try {
-            while (!Thread.currentThread().isInterrupted()) {
-                this.cpuGraph.addValue(this.remoteDesktop.getCpuLoad());
-                this.ramGraph.addValue(this.remoteDesktop.getRamUsage());
-                this.drivesInfoPanel.updateInfo(this.remoteDesktop.getComputerInfo());
-                Thread.sleep(POLL_INTERVAL_MS);
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            this.cpuGraph.addValue(this.remoteDesktop.getCpuLoad());
+            this.ramGraph.addValue(this.remoteDesktop.getRamUsage());
+            this.drivesInfoPanel.updateInfo(this.remoteDesktop.getComputerInfo());
         } catch (Exception e) {
+            this.scheduler.shutdown();
             this.setVisible(false);
         }
     }
 
     /**
-     * Stops the polling thread and hides and disposes the dialog.
+     * Stops the polling scheduler and hides and disposes the dialog.
      */
     @Override
     public void dispose() {
-        if (!this.updateThread.isInterrupted()) {
-            this.updateThread.interrupt();
-        }
+        this.scheduler.shutdownNow();
         super.setVisible(false);
         super.dispose();
     }
