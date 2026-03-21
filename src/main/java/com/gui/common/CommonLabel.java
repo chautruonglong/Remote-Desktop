@@ -1,5 +1,6 @@
 package com.gui.common;
 
+import com.gui.AppStyles;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -20,16 +21,11 @@ import javax.swing.JLabel;
  */
 public class CommonLabel extends JLabel {
 
-    /** Hex color string for the label foreground, matching the tab bar palette. */
-    public static final String FOREGROUND_COLOR = "0x99A7FF";
-
     /** Font size for the currently active (selected) tab label. */
     public static final int BIG_FONT_SIZE = 35;
 
     /** Font size for inactive tab labels. */
     public static final int SMALL_FONT_SIZE = 18;
-
-    private static final String FONT_FAMILY = "segoe ui";
 
     /**
      * Creates a new {@code CommonLabel} in the small (inactive) state.
@@ -37,7 +33,7 @@ public class CommonLabel extends JLabel {
      */
     public CommonLabel() {
         this.setSmallFont();
-        this.setForeground(Color.decode(CommonLabel.FOREGROUND_COLOR));
+        this.setForeground(Color.decode(AppStyles.COLOR_TAB_LABEL));
 
         this.addMouseListener(new MouseAdapter() {
             @Override
@@ -57,7 +53,7 @@ public class CommonLabel extends JLabel {
      * Call this when the associated tab becomes selected.
      */
     public void setBigFont() {
-        this.setFont(new Font(FONT_FAMILY, Font.PLAIN, BIG_FONT_SIZE));
+        this.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, BIG_FONT_SIZE));
     }
 
     /**
@@ -65,7 +61,7 @@ public class CommonLabel extends JLabel {
      * Call this when the associated tab loses focus.
      */
     public void setSmallFont() {
-        this.setFont(new Font(FONT_FAMILY, Font.PLAIN, SMALL_FONT_SIZE));
+        this.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, SMALL_FONT_SIZE));
     }
 
     /**
@@ -74,7 +70,7 @@ public class CommonLabel extends JLabel {
      */
     public void resetFont() {
         int currentSize = this.getFont().getSize();
-        this.setFont(new Font(FONT_FAMILY, Font.PLAIN, currentSize));
+        this.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, currentSize));
     }
 
     // -------------------------------------------------------------------------
@@ -85,7 +81,7 @@ public class CommonLabel extends JLabel {
         if (this.isEnabled()) {
             this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             int currentSize = this.getFont().getSize();
-            this.setFont(new Font(FONT_FAMILY, Font.BOLD, currentSize));
+            this.setFont(new Font(AppStyles.FONT_UI, Font.BOLD, currentSize));
         }
     }
 
@@ -93,7 +89,7 @@ public class CommonLabel extends JLabel {
         if (this.isEnabled()) {
             this.setCursor(Cursor.getDefaultCursor());
             int currentSize = this.getFont().getSize();
-            this.setFont(new Font(FONT_FAMILY, Font.PLAIN, currentSize));
+            this.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, currentSize));
         }
     }
 }

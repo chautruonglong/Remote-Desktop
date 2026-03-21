@@ -1,6 +1,7 @@
 package com.gui.chat;
 
 import com.bus.chat.FileMessage;
+import com.gui.AppStyles;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
@@ -26,7 +27,6 @@ import javax.swing.filechooser.FileSystemView;
  */
 public class FileLabel extends JLabel {
 
-    private static final String FONT_FAMILY = "consolas";
     private static final int NORMAL_SIZE = 14;
     private static final int HOVER_SIZE  = 15;
 
@@ -43,7 +43,7 @@ public class FileLabel extends JLabel {
         this.setText(
             this.fileMessage.getSender() + " sent a file: <U>" + this.fileMessage.getFileName() + "</U>"
         );
-        this.setFont(new Font(FONT_FAMILY, Font.ITALIC, NORMAL_SIZE));
+        this.setFont(new Font(AppStyles.FONT_MONO, Font.ITALIC, NORMAL_SIZE));
 
         this.addMouseListener(new MouseAdapter() {
             @Override
@@ -66,14 +66,14 @@ public class FileLabel extends JLabel {
     private void onMouseEntered(MouseEvent e) {
         if (this.isEnabled()) {
             this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            this.setFont(new Font(FONT_FAMILY, Font.ITALIC | Font.BOLD, HOVER_SIZE));
+            this.setFont(new Font(AppStyles.FONT_MONO, Font.ITALIC | Font.BOLD, HOVER_SIZE));
         }
     }
 
     private void onMouseExited(MouseEvent e) {
         if (this.isEnabled()) {
             this.setCursor(Cursor.getDefaultCursor());
-            this.setFont(new Font(FONT_FAMILY, Font.ITALIC, NORMAL_SIZE));
+            this.setFont(new Font(AppStyles.FONT_MONO, Font.ITALIC, NORMAL_SIZE));
         }
     }
 

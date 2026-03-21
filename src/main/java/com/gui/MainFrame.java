@@ -42,8 +42,6 @@ public class MainFrame extends JFrame {
     /** Height of the top tab bar in pixels. */
     public static final int HEIGHT_TASKBAR = 50;
 
-    /** Hex color string for the tab bar background. */
-    public static final String TASKBAR_BACKGROUND = "0x000942";
 
     private final CommonBus commonBus;
 
@@ -67,8 +65,8 @@ public class MainFrame extends JFrame {
         ImageIO.setUseCache(false);
 
         // Update UIManager defaults for disabled label/radio button colours.
-        UIManager.put("Label.disabledForeground", Color.decode("0xD3D3D3"));
-        UIManager.put("RadioButton.disabledText", Color.decode("0xD3D3D3"));
+        UIManager.put("Label.disabledForeground", Color.decode(AppStyles.COLOR_DISABLED));
+        UIManager.put("RadioButton.disabledText", Color.decode(AppStyles.COLOR_DISABLED));
 
         this.getContentPane().setPreferredSize(new Dimension(WIDTH_FRAME, HEIGHT_FRAME));
         this.pack();
@@ -113,7 +111,7 @@ public class MainFrame extends JFrame {
         GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[]{ 100, 100, 100 };
         taskbarPanel.setLayout(gridBagLayout);
-        taskbarPanel.setBackground(Color.decode(TASKBAR_BACKGROUND));
+        taskbarPanel.setBackground(Color.decode(AppStyles.COLOR_TASKBAR));
         taskbarPanel.setBounds(0, 0, WIDTH_FRAME, HEIGHT_TASKBAR);
         this.add(taskbarPanel);
 

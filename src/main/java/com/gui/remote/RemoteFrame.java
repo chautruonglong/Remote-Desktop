@@ -2,6 +2,7 @@ package com.gui.remote;
 
 import com.bus.common.CommonBus;
 import com.bus.rmi.IRemoteDesktop;
+import com.gui.AppStyles;
 import com.gui.Icons;
 import com.gui.client.ClientPanel;
 import com.model.ImageQuality;
@@ -173,12 +174,12 @@ public class RemoteFrame extends JFrame implements Runnable {
 
         // Menu bar with the "Show monitor" option.
         this.menuBar.setLayout(new GridBagLayout());
-        this.menuBar.setBackground(Color.decode("0x9A9A9A"));
+        this.menuBar.setBackground(Color.decode(AppStyles.COLOR_MENU_BAR));
         this.menuBar.setPreferredSize(new Dimension(0, 25));
         this.setJMenuBar(this.menuBar);
 
         monitorMenu.setText("Show monitor");
-        this.menuBar.setFont(new Font("segoe ui", Font.PLAIN, 14));
+        this.menuBar.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, 14));
         monitorMenu.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -187,13 +188,13 @@ public class RemoteFrame extends JFrame implements Runnable {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                monitorMenu.setFont(new Font("segoe ui", Font.BOLD, 16));
+                monitorMenu.setFont(new Font(AppStyles.FONT_UI, Font.BOLD, 16));
                 setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                monitorMenu.setFont(new Font("segoe ui", Font.PLAIN, 14));
+                monitorMenu.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, 14));
                 setCursor(Cursor.getDefaultCursor());
             }
         });

@@ -2,9 +2,9 @@ package com.gui.server;
 
 import com.bus.common.CommonBus;
 import com.bus.tcp.TcpServer;
+import com.gui.AppStyles;
 import com.gui.Icons;
 import com.gui.MainFrame;
-import com.gui.client.ClientPanel;
 import com.gui.common.CommonLabel;
 import com.gui.common.CommonPanel;
 import java.awt.Color;
@@ -31,13 +31,6 @@ import javax.swing.event.PopupMenuListener;
  */
 public class ServerPanel extends JPanel implements Runnable {
 
-    /** Foreground colour for the "Stopped" status label. */
-    public static final String STOPPED_FOREGROUND = "0xF50016";
-
-    /** Foreground colour for the "Listening" status label. */
-    public static final String LISTENING_FOREGROUND = "0x0042A7";
-
-    private static final String FONT_FAMILY = "segoe ui";
 
     private CommonPanel mainPanel;
     private JLabel statusLabel;
@@ -57,7 +50,7 @@ public class ServerPanel extends JPanel implements Runnable {
 
         this.setLocation(0, MainFrame.HEIGHT_TASKBAR);
         this.setSize(MainFrame.WIDTH_FRAME, MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR);
-        this.setBackground(Color.decode(ClientPanel.BACKGROUND));
+        this.setBackground(Color.decode(AppStyles.COLOR_BACKGROUND));
         this.setLayout(null);
 
         this.initComponents();
@@ -94,16 +87,16 @@ public class ServerPanel extends JPanel implements Runnable {
         // Status label — shows "Stopped" or "Listening…"
         this.statusLabel.setText("Status: Stopped");
         this.statusLabel.setBounds(30, 200, 150, 20);
-        this.statusLabel.setFont(new Font(FONT_FAMILY, Font.ITALIC | Font.BOLD, 13));
-        this.statusLabel.setForeground(Color.decode(STOPPED_FOREGROUND));
+        this.statusLabel.setFont(new Font(AppStyles.FONT_UI, Font.ITALIC | Font.BOLD, 13));
+        this.statusLabel.setForeground(Color.decode(AppStyles.COLOR_STATUS_STOPPED));
         this.mainPanel.add(this.statusLabel);
 
         // "Start listening" action label.
         this.listenLabel.setText("Start listening");
         this.listenLabel.setIcon(Icons.LISTEN);
         this.listenLabel.setBounds(50, 290, 150, 50);
-        this.listenLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.listenLabel.setFont(new Font(FONT_FAMILY, Font.PLAIN, 15));
+        this.listenLabel.setForeground(Color.decode(AppStyles.COLOR_FOREGROUND));
+        this.listenLabel.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, 15));
         this.listenLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -116,8 +109,8 @@ public class ServerPanel extends JPanel implements Runnable {
         this.stopLabel.setText("Stop listening");
         this.stopLabel.setIcon(Icons.STOP);
         this.stopLabel.setBounds(220, 290, 150, 50);
-        this.stopLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.stopLabel.setFont(new Font(FONT_FAMILY, Font.PLAIN, 15));
+        this.stopLabel.setForeground(Color.decode(AppStyles.COLOR_FOREGROUND));
+        this.stopLabel.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, 15));
         this.stopLabel.setEnabled(false);
         this.stopLabel.addMouseListener(new MouseAdapter() {
             @Override
@@ -151,7 +144,7 @@ public class ServerPanel extends JPanel implements Runnable {
             this.listenLabel.setEnabled(false);
             this.stopLabel.setEnabled(true);
             this.statusLabel.setText("Status: Listening...");
-            this.statusLabel.setForeground(Color.decode(LISTENING_FOREGROUND));
+            this.statusLabel.setForeground(Color.decode(AppStyles.COLOR_STATUS_LISTENING));
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(
                 this,
@@ -175,7 +168,7 @@ public class ServerPanel extends JPanel implements Runnable {
             this.stopLabel.setEnabled(false);
             this.listenLabel.setEnabled(true);
             this.statusLabel.setText("Status: Stopped");
-            this.statusLabel.setForeground(Color.decode(STOPPED_FOREGROUND));
+            this.statusLabel.setForeground(Color.decode(AppStyles.COLOR_STATUS_STOPPED));
         } catch (Exception ex) {
             System.err.println("Error stopping server: " + ex.getMessage());
             JOptionPane.showMessageDialog(

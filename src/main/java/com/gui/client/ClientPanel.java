@@ -1,6 +1,7 @@
 package com.gui.client;
 
 import com.bus.common.CommonBus;
+import com.gui.AppStyles;
 import com.gui.Icons;
 import com.gui.MainFrame;
 import com.gui.common.CommonLabel;
@@ -21,19 +22,8 @@ import javax.swing.border.TitledBorder;
  * <p>The user enters the server's IP address, port, and password, selects an image quality,
  * and clicks "Connect now". The connection is established on a background thread to avoid
  * blocking the EDT. On success a {@link RemoteFrame} is opened.</p>
- *
- * <p>Color constants ({@link #BACKGROUND}, {@link #FOREGROUND}) are shared with other
- * panels so the application maintains a consistent color scheme.</p>
  */
 public class ClientPanel extends JPanel {
-
-    /** Hex color string for the panel background — used by other panels for consistency. */
-    public static final String BACKGROUND = "0x00A571";
-
-    /** Hex color string for the panel foreground text — used by other panels for consistency. */
-    public static final String FOREGROUND = "0x003927";
-
-    private static final String FONT_FAMILY = "segoe ui";
 
     private CommonPanel mainPanel;
     private CommonLabel connectLabel;
@@ -53,19 +43,19 @@ public class ClientPanel extends JPanel {
 
         this.setLocation(0, MainFrame.HEIGHT_TASKBAR);
         this.setSize(MainFrame.WIDTH_FRAME, MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR);
-        this.setBackground(Color.decode(BACKGROUND));
+        this.setBackground(Color.decode(AppStyles.COLOR_BACKGROUND));
         this.setLayout(null);
 
         this.initComponents();
     }
 
     private void initComponents() {
-        this.mainPanel         = new CommonPanel();
-        this.connectLabel      = new CommonLabel();
+        this.mainPanel        = new CommonPanel();
+        this.connectLabel     = new CommonLabel();
         ButtonGroup qualityButtonGroup = new ButtonGroup();
-        this.lowQualityRadio   = new JRadioButton();
-        this.highQualityRadio  = new JRadioButton();
-        this.loaderLabel       = new JLabel();
+        this.lowQualityRadio  = new JRadioButton();
+        this.highQualityRadio = new JRadioButton();
+        this.loaderLabel      = new JLabel();
 
         // Override the shared panel's border title for the client context.
         this.mainPanel.setBorder(BorderFactory.createTitledBorder(
@@ -73,8 +63,8 @@ public class ClientPanel extends JPanel {
             "Connect To Server",
             TitledBorder.DEFAULT_JUSTIFICATION,
             TitledBorder.DEFAULT_POSITION,
-            new Font(FONT_FAMILY, Font.BOLD, 16),
-            Color.decode(FOREGROUND)
+            new Font(AppStyles.FONT_UI, Font.BOLD, 16),
+            Color.decode(AppStyles.COLOR_FOREGROUND)
         ));
         this.add(this.mainPanel);
 
@@ -103,8 +93,8 @@ public class ClientPanel extends JPanel {
         this.connectLabel.setIcon(Icons.CONNECT);
         this.connectLabel.setText("Connect now");
         this.connectLabel.setBounds(220, 290, 150, 50);
-        this.connectLabel.setForeground(Color.decode(FOREGROUND));
-        this.connectLabel.setFont(new Font(FONT_FAMILY, Font.PLAIN, 15));
+        this.connectLabel.setForeground(Color.decode(AppStyles.COLOR_FOREGROUND));
+        this.connectLabel.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, 15));
         this.connectLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {

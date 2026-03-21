@@ -5,9 +5,9 @@ import com.bus.chat.FileMessage;
 import com.bus.chat.Message;
 import com.bus.chat.StringMessage;
 import com.bus.common.CommonBus;
+import com.gui.AppStyles;
 import com.gui.Icons;
 import com.gui.MainFrame;
-import com.gui.client.ClientPanel;
 import com.gui.common.CommonLabel;
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -43,17 +43,11 @@ import javax.swing.filechooser.FileSystemView;
  */
 public class ChatPanel extends JPanel implements Runnable {
 
-    /** Background color for the message history area. */
-    public static final String CONTENT_BACKGROUND = "0xFFFFFF";
-
     /** Maximum characters per line before wrapping in the history display. */
     public static final int MAX_LINE_LENGTH = 20;
 
     /** Maximum file size (30 MB) allowed for file transfers. */
     public static final long MAX_FILE_SIZE_BYTES = 30L * 1024 * 1024;
-
-    private static final String FONT_FAMILY_MONO = "consolas";
-    private static final String FONT_FAMILY_UI   = "segoe ui";
 
     private JScrollPane scrollPanel;
     private JTextArea messageTextArea;
@@ -90,7 +84,7 @@ public class ChatPanel extends JPanel implements Runnable {
 
         this.setLocation(0, MainFrame.HEIGHT_TASKBAR - 42);
         this.setSize(MainFrame.WIDTH_FRAME, MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR);
-        this.setBackground(Color.decode(ClientPanel.BACKGROUND));
+        this.setBackground(Color.decode(AppStyles.COLOR_BACKGROUND));
         this.setLayout(null);
 
         this.initComponents();
@@ -115,7 +109,7 @@ public class ChatPanel extends JPanel implements Runnable {
         this.contentLayout.setHorizontalGroup(this.horizontalGroup);
         this.contentLayout.setVerticalGroup(this.verticalGroup);
 
-        contentPanel.setBackground(Color.decode(CONTENT_BACKGROUND));
+        contentPanel.setBackground(Color.decode(AppStyles.COLOR_CHAT_CONTENT));
         contentPanel.setLayout(this.contentLayout);
 
         this.scrollPanel.setViewportView(contentPanel);
@@ -125,7 +119,7 @@ public class ChatPanel extends JPanel implements Runnable {
         this.add(this.scrollPanel);
 
         // Text input.
-        this.messageTextArea.setFont(new Font(FONT_FAMILY_MONO, Font.PLAIN, 14));
+        this.messageTextArea.setFont(new Font(AppStyles.FONT_MONO, Font.PLAIN, 14));
         this.messageTextArea.setLineWrap(true);
         this.messageTextArea.getDocument().putProperty("filterNewlines", Boolean.TRUE);
         this.messageTextArea.addKeyListener(new KeyAdapter() {
@@ -149,8 +143,8 @@ public class ChatPanel extends JPanel implements Runnable {
         // "Send" button.
         this.sendLabel.setText("Send");
         this.sendLabel.setIcon(Icons.SEND);
-        this.sendLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.sendLabel.setFont(new Font(FONT_FAMILY_UI, Font.PLAIN, 13));
+        this.sendLabel.setForeground(Color.decode(AppStyles.COLOR_FOREGROUND));
+        this.sendLabel.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, 13));
         this.sendLabel.setBounds(scrollText.getWidth() + 50, scrollText.getY(), 80, 30);
         this.sendLabel.addMouseListener(new MouseAdapter() {
             @Override
@@ -163,8 +157,8 @@ public class ChatPanel extends JPanel implements Runnable {
         // "File" button.
         this.fileLabel.setText("File");
         this.fileLabel.setIcon(Icons.FILE);
-        this.fileLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.fileLabel.setFont(new Font(FONT_FAMILY_UI, Font.PLAIN, 13));
+        this.fileLabel.setForeground(Color.decode(AppStyles.COLOR_FOREGROUND));
+        this.fileLabel.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, 13));
         this.fileLabel.setBounds(scrollText.getWidth() + 50, scrollText.getY() + 40, 60, 30);
         this.fileLabel.addMouseListener(new MouseAdapter() {
             @Override
@@ -245,7 +239,7 @@ public class ChatPanel extends JPanel implements Runnable {
 
             int rightGap = this.scrollPanel.getWidth() - 180;
             JLabel label = new JLabel("You sent a message:" + content);
-            label.setFont(new Font(FONT_FAMILY_MONO, Font.PLAIN, 14));
+            label.setFont(new Font(AppStyles.FONT_MONO, Font.PLAIN, 14));
             label.setForeground(Color.BLACK);
             addMessageToPanel(label, rightGap, "green");
         } catch (Exception ex) {
@@ -414,7 +408,7 @@ public class ChatPanel extends JPanel implements Runnable {
                     JLabel label = new JLabel(
                         stringMessage.getSender() + " sent a message:" + stringMessage.getContent()
                     );
-                    label.setFont(new Font(FONT_FAMILY_MONO, Font.PLAIN, 14));
+                    label.setFont(new Font(AppStyles.FONT_MONO, Font.PLAIN, 14));
                     label.setForeground(Color.BLACK);
                     addMessageToPanel(label, 0, "blue");
                 } else if (message instanceof FileMessage) {

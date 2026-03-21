@@ -1,5 +1,6 @@
 package com.gui.remote;
 
+import com.gui.AppStyles;
 import com.gui.Icons;
 import com.model.ComputerInfo;
 import com.model.DriveInfo;
@@ -24,8 +25,6 @@ import javax.swing.*;
  */
 public class DrivesInfoPanel extends JPanel {
 
-    /** Hex color for drive progress bars when usage is below the warning threshold. */
-    public static final String PROGRESS_FOREGROUND = "0x26A0DA";
 
     /** Usage ratio above which the progress bar switches to red. */
     private static final double WARNING_THRESHOLD = 0.9;
@@ -63,7 +62,7 @@ public class DrivesInfoPanel extends JPanel {
 
             // OS name label.
             JLabel osLabel = new JLabel("Operating System: " + pcInfo.getOsName());
-            osLabel.setFont(new Font("segoe ui", Font.BOLD | Font.ITALIC, 17));
+            osLabel.setFont(new Font(AppStyles.FONT_UI, Font.BOLD | Font.ITALIC, 17));
             osLabel.setForeground(Color.BLUE);
             osLabel.setBounds(PADDING, y, HardwareDialog.WIDTH_DIALOG - 100, OS_LABEL_HEIGHT);
             this.add(osLabel);
@@ -82,7 +81,7 @@ public class DrivesInfoPanel extends JPanel {
                     "</html>";
                 JLabel driveLabel = new JLabel(driveText);
                 driveLabel.setIcon(Icons.HDD);
-                driveLabel.setFont(new Font("segoe ui", Font.PLAIN, 12));
+                driveLabel.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, 12));
                 driveLabel.setIconTextGap(20);
                 driveLabel.setBounds(PADDING + 30, y, DRIVE_LABEL_WIDTH, DRIVE_LABEL_HEIGHT);
                 this.add(driveLabel);
@@ -94,7 +93,7 @@ public class DrivesInfoPanel extends JPanel {
                 progressBar.setForeground(
                     (totalGb > 0 && (double) usedGb / totalGb >= WARNING_THRESHOLD)
                         ? Color.RED
-                        : Color.decode(PROGRESS_FOREGROUND)
+                        : Color.decode(AppStyles.COLOR_DRIVE_PROGRESS)
                 );
                 progressBar.setBounds(
                     PADDING + 30 + DRIVE_LABEL_WIDTH + 20,

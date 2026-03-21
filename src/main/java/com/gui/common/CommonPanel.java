@@ -1,7 +1,7 @@
 package com.gui.common;
 
+import com.gui.AppStyles;
 import com.gui.MainFrame;
-import com.gui.client.ClientPanel;
 import java.awt.Color;
 import java.awt.Font;
 import javax.swing.*;
@@ -25,7 +25,6 @@ import javax.swing.border.TitledBorder;
  */
 public class CommonPanel extends JPanel {
 
-    private static final String FONT_FAMILY = "segoe ui";
     private static final int DEFAULT_PORT = 9999;
 
     private JLabel hostLabel;
@@ -49,12 +48,12 @@ public class CommonPanel extends JPanel {
             "Server Listening",
             TitledBorder.DEFAULT_JUSTIFICATION,
             TitledBorder.DEFAULT_POSITION,
-            new Font(FONT_FAMILY, Font.BOLD, 16),
-            Color.decode(ClientPanel.FOREGROUND)
+            new Font(AppStyles.FONT_UI, Font.BOLD, 16),
+            Color.decode(AppStyles.COLOR_FOREGROUND)
         ));
         this.setBounds(50, 30, MainFrame.WIDTH_FRAME - 100, 230);
-        this.setBackground(Color.decode(ClientPanel.BACKGROUND));
-        this.setForeground(Color.decode(ClientPanel.FOREGROUND));
+        this.setBackground(Color.decode(AppStyles.COLOR_BACKGROUND));
+        this.setForeground(Color.decode(AppStyles.COLOR_FOREGROUND));
         this.setLayout(null);
 
         this.initComponents();
@@ -74,7 +73,7 @@ public class CommonPanel extends JPanel {
         // Host label
         this.hostLabel.setText("Server IP:");
         this.hostLabel.setBounds(30, 30, 100, 30);
-        this.hostLabel.setFont(new Font(FONT_FAMILY, Font.BOLD, 14));
+        this.hostLabel.setFont(new Font(AppStyles.FONT_UI, Font.BOLD, 14));
         this.add(this.hostLabel);
 
         // Host combo (server panel: pick a local interface)
@@ -89,7 +88,7 @@ public class CommonPanel extends JPanel {
         // Port label
         this.portLabel.setText("Server port:");
         this.portLabel.setBounds(30, 60, 100, 30);
-        this.portLabel.setFont(new Font(FONT_FAMILY, Font.BOLD, 14));
+        this.portLabel.setFont(new Font(AppStyles.FONT_UI, Font.BOLD, 14));
         this.add(this.portLabel);
 
         // Port text field
@@ -100,7 +99,7 @@ public class CommonPanel extends JPanel {
         // Password label
         this.passwordLabel.setText("Set password:");
         this.passwordLabel.setBounds(30, 90, 100, 30);
-        this.passwordLabel.setFont(new Font(FONT_FAMILY, Font.BOLD, 14));
+        this.passwordLabel.setFont(new Font(AppStyles.FONT_UI, Font.BOLD, 14));
         this.add(this.passwordLabel);
 
         // Plain password field (server panel: admin reads the password they set)
@@ -120,8 +119,8 @@ public class CommonPanel extends JPanel {
             "</html>"
         );
         this.helpLabel.setBounds(40, 130, 230, 70);
-        this.helpLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
-        this.helpLabel.setFont(new Font(FONT_FAMILY, Font.BOLD, 13));
+        this.helpLabel.setForeground(Color.decode(AppStyles.COLOR_FOREGROUND));
+        this.helpLabel.setFont(new Font(AppStyles.FONT_UI, Font.BOLD, 13));
         this.add(this.helpLabel);
     }
 

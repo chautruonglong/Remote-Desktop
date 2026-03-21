@@ -2,8 +2,8 @@ package com.gui.chat;
 
 import com.bus.chat.ChatBus;
 import com.bus.common.CommonBus;
+import com.gui.AppStyles;
 import com.gui.MainFrame;
-import com.gui.client.ClientPanel;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -30,7 +30,6 @@ import javax.swing.JPopupMenu;
  */
 public class MainChatPanel extends JPanel {
 
-    private static final String FONT_FAMILY = "segoe ui";
 
     private JLabel connectionsLabel;
     private JPopupMenu popupMenu;
@@ -51,7 +50,7 @@ public class MainChatPanel extends JPanel {
 
         this.setLocation(0, MainFrame.HEIGHT_TASKBAR);
         this.setSize(MainFrame.WIDTH_FRAME, MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR);
-        this.setBackground(Color.decode(ClientPanel.BACKGROUND));
+        this.setBackground(Color.decode(AppStyles.COLOR_BACKGROUND));
         this.setLayout(null);
 
         this.initComponents();
@@ -65,7 +64,7 @@ public class MainChatPanel extends JPanel {
         updateConnectionsLabel();
 
         this.connectionsLabel.setBounds(0, 0, 100, 15);
-        this.connectionsLabel.setFont(new Font(FONT_FAMILY, Font.PLAIN, 13));
+        this.connectionsLabel.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, 13));
         this.connectionsLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -159,12 +158,12 @@ public class MainChatPanel extends JPanel {
     }
 
     private void onConnectionsLabelEntered(MouseEvent e) {
-        this.connectionsLabel.setFont(new Font(FONT_FAMILY, Font.BOLD, 13));
+        this.connectionsLabel.setFont(new Font(AppStyles.FONT_UI, Font.BOLD, 13));
         this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     private void onConnectionsLabelExited(MouseEvent e) {
-        this.connectionsLabel.setFont(new Font(FONT_FAMILY, Font.PLAIN, 13));
+        this.connectionsLabel.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, 13));
         this.setCursor(Cursor.getDefaultCursor());
     }
 }

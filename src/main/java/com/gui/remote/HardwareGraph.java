@@ -1,5 +1,6 @@
 package com.gui.remote;
 
+import com.gui.AppStyles;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,17 +93,17 @@ public class HardwareGraph extends JPanel {
 
         // Draw title.
         g2d.setColor(Color.BLACK);
-        g2d.setFont(new Font("segoe ui", Font.BOLD, 12));
+        g2d.setFont(new Font(AppStyles.FONT_UI, Font.BOLD, 12));
         g2d.drawString(this.title != null ? this.title : "", 10, g2d.getFontMetrics().getAscent());
 
         // Draw percentage axis labels.
         g2d.setColor(Color.BLACK);
-        g2d.setFont(new Font("segoe ui", Font.PLAIN, 10));
+        g2d.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, 10));
         g2d.drawString("100%", this.graphBounds.x, this.graphBounds.y - 2);
         g2d.drawString("0%",   this.graphBounds.x, this.graphBounds.y + this.graphBounds.height + g2d.getFontMetrics().getAscent());
 
         // Draw grid lines.
-        g2d.setColor(Color.decode("0xD9EAF4"));
+        g2d.setColor(Color.decode(AppStyles.COLOR_GRAPH_GRID));
         g2d.setStroke(new BasicStroke(1f));
         for (int i = 1; i < verticalLines; i++) {
             int x = this.graphBounds.x + GRID_SPACING * i;
@@ -114,7 +115,7 @@ public class HardwareGraph extends JPanel {
         }
 
         // Draw a graph border rectangle.
-        g2d.setColor(Color.decode("0x117DBB"));
+        g2d.setColor(Color.decode(AppStyles.COLOR_GRAPH_BORDER));
         g2d.setStroke(new BasicStroke(1.5f));
         g2d.drawRect(this.graphBounds.x, this.graphBounds.y, this.graphBounds.width, this.graphBounds.height);
 
@@ -143,7 +144,7 @@ public class HardwareGraph extends JPanel {
             int latestY     = this.graphBounds.y + this.graphBounds.height - latestPixel;
             int latestPct   = latestPixel * 100 / this.graphBounds.height;
             g2d.setColor(Color.RED);
-            g2d.setFont(new Font("segoe ui", Font.PLAIN, 11));
+            g2d.setFont(new Font(AppStyles.FONT_UI, Font.PLAIN, 11));
             g2d.drawString(latestPct + "%", this.graphBounds.x + this.graphBounds.width + 10, latestY);
         }
     }
