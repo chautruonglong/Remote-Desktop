@@ -18,6 +18,47 @@
 
     <build>
         <plugins>
+            <!-- Wrap the fat jar in a Windows .exe stub (cross-platform build). -->
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>2.5.1</version>
+                <executions>
+                    <execution>
+                        <id>build-windows-exe</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <!-- gui: suppresses the console window on launch -->
+                            <headerType>gui</headerType>
+                            <outfile>${project.build.directory}/${project.artifactId}-${project.version}.exe</outfile>
+                            <jar>${project.build.directory}/${project.artifactId}-${project.version}.jar</jar>
+                            <errTitle>Remote Desktop</errTitle>
+                            <classPath>
+                                <mainClass>Application</mainClass>
+                            </classPath>
+                            <jre>
+                                <minVersion>15</minVersion>
+                                <path>%JAVA_HOME%;%PATH%</path>
+                            </jre>
+                            <versionInfo>
+                                <fileVersion>1.0.0.0</fileVersion>
+                                <txtFileVersion>${project.version}</txtFileVersion>
+                                <fileDescription>Remote Desktop Software</fileDescription>
+                                <copyright>Remote Desktop</copyright>
+                                <productVersion>1.0.0.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <productName>${project.name}</productName>
+                                <internalName>remote-desktop</internalName>
+                                <originalFilename>${project.artifactId}-${project.version}.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Build an executable fat jar. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
