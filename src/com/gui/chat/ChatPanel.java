@@ -58,7 +58,6 @@ public class ChatPanel extends JPanel implements Runnable {
     private JPanel contentPanel;
     private JScrollPane scrollPanel;
     private JTextArea messageTextArea;
-    private JScrollPane scrollText;
     private CommonLabel sendLabel;
     private CommonLabel fileLabel;
     private JLabel loaderLabel;
@@ -76,8 +75,6 @@ public class ChatPanel extends JPanel implements Runnable {
 
     /** The menu item in the connections pop-up that links to this panel. */
     private ConnectionItem connectionItem;
-
-    private final Thread receiveThread;
 
     /**
      * Creates a new {@code ChatPanel} for the given connection.
@@ -99,16 +96,15 @@ public class ChatPanel extends JPanel implements Runnable {
 
         this.initComponents();
 
-        this.receiveThread = new Thread(this);
-        this.receiveThread.setDaemon(true);
-        this.receiveThread.start();
+        var receiveThread = new Thread(this);
+        receiveThread.setDaemon(true);
+        receiveThread.start();
     }
 
     private void initComponents() {
         this.contentPanel  = new JPanel();
         this.scrollPanel   = new JScrollPane();
         this.messageTextArea = new JTextArea();
-        this.scrollText    = new JScrollPane();
         this.sendLabel     = new CommonLabel();
         this.fileLabel     = new CommonLabel();
         this.loaderLabel   = new JLabel();
@@ -140,23 +136,23 @@ public class ChatPanel extends JPanel implements Runnable {
             }
         });
 
-        this.scrollText = new JScrollPane(this.messageTextArea);
-        this.scrollText.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        this.scrollText.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        this.scrollText.setBounds(
+        var scrollText = new JScrollPane(this.messageTextArea);
+        scrollText.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollText.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollText.setBounds(
             30,
             this.scrollPanel.getHeight() + 20,
             MainFrame.WIDTH_FRAME - 150,
             MainFrame.HEIGHT_FRAME - MainFrame.HEIGHT_TASKBAR - this.scrollPanel.getHeight() - 30
         );
-        this.add(this.scrollText);
+        this.add(scrollText);
 
         // "Send" button.
         this.sendLabel.setText("Send");
         this.sendLabel.setIcon(Icons.SEND);
         this.sendLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
         this.sendLabel.setFont(new Font(FONT_FAMILY_UI, Font.PLAIN, 13));
-        this.sendLabel.setBounds(this.scrollText.getWidth() + 50, this.scrollText.getY(), 80, 30);
+        this.sendLabel.setBounds(scrollText.getWidth() + 50, scrollText.getY(), 80, 30);
         this.sendLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -170,7 +166,7 @@ public class ChatPanel extends JPanel implements Runnable {
         this.fileLabel.setIcon(Icons.FILE);
         this.fileLabel.setForeground(Color.decode(ClientPanel.FOREGROUND));
         this.fileLabel.setFont(new Font(FONT_FAMILY_UI, Font.PLAIN, 13));
-        this.fileLabel.setBounds(this.scrollText.getWidth() + 50, this.scrollText.getY() + 40, 60, 30);
+        this.fileLabel.setBounds(scrollText.getWidth() + 50, scrollText.getY() + 40, 60, 30);
         this.fileLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {

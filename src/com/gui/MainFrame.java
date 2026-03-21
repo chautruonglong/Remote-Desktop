@@ -46,7 +46,6 @@ public class MainFrame extends JFrame {
 
     private final CommonBus commonBus;
 
-    private JPanel taskbarPanel;
     private CommonLabel clientLabel;
     private CommonLabel serverLabel;
     private CommonLabel chatLabel;
@@ -96,7 +95,7 @@ public class MainFrame extends JFrame {
 
     private void initComponents() {
         // Construct child panels.
-        this.taskbarPanel   = new JPanel();
+        var taskbarPanel    = new JPanel();
         this.clientLabel    = new CommonLabel();
         this.serverLabel    = new CommonLabel();
         this.chatLabel      = new CommonLabel();
@@ -115,10 +114,10 @@ public class MainFrame extends JFrame {
         // Tab bar layout — three equal columns.
         var gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[]{ 100, 100, 100 };
-        this.taskbarPanel.setLayout(gridBagLayout);
-        this.taskbarPanel.setBackground(Color.decode(TASKBAR_BACKGROUND));
-        this.taskbarPanel.setBounds(0, 0, WIDTH_FRAME, HEIGHT_TASKBAR);
-        this.add(this.taskbarPanel);
+        taskbarPanel.setLayout(gridBagLayout);
+        taskbarPanel.setBackground(Color.decode(TASKBAR_BACKGROUND));
+        taskbarPanel.setBounds(0, 0, WIDTH_FRAME, HEIGHT_TASKBAR);
+        this.add(taskbarPanel);
 
         // Client tab label.
         this.clientLabel.setText("Client");
@@ -129,7 +128,7 @@ public class MainFrame extends JFrame {
                 onTabClicked(e, clientLabel, Tab.CLIENT);
             }
         });
-        this.taskbarPanel.add(this.clientLabel);
+        taskbarPanel.add(this.clientLabel);
 
         // Server tab label.
         this.serverLabel.setText("Server");
@@ -139,7 +138,7 @@ public class MainFrame extends JFrame {
                 onTabClicked(e, serverLabel, Tab.SERVER);
             }
         });
-        this.taskbarPanel.add(this.serverLabel);
+        taskbarPanel.add(this.serverLabel);
 
         // Chat tab label.
         this.chatLabel.setText("Chat");
@@ -149,7 +148,7 @@ public class MainFrame extends JFrame {
                 onTabClicked(e, chatLabel, Tab.CHAT);
             }
         });
-        this.taskbarPanel.add(this.chatLabel);
+        taskbarPanel.add(this.chatLabel);
 
         // Show only the client panel initially.
         this.clientPanel.setVisible(true);

@@ -36,7 +36,6 @@ public class HardwareDialog extends JDialog implements Runnable {
     private HardwareGraph cpuGraph;
     private HardwareGraph ramGraph;
     private DrivesInfoPanel drivesInfoPanel;
-    private JScrollPane drivesScrollPane;
 
     private final IRemoteDesktop remoteDesktop;
     private final Thread updateThread;
@@ -88,8 +87,6 @@ public class HardwareDialog extends JDialog implements Runnable {
             "RAM (" + this.totalRamGb + " GB)  SWAP (" + this.totalSwapGb + " GB)"
         );
         this.drivesInfoPanel = new DrivesInfoPanel();
-        this.drivesScrollPane = new JScrollPane();
-
         // Position CPU graph at the top.
         this.cpuGraph.setLocation(0, 20);
         this.add(this.cpuGraph);
@@ -101,10 +98,11 @@ public class HardwareDialog extends JDialog implements Runnable {
 
         // Position drives scroll pane below RAM graph.
         int drivesY = ramY + HEIGHT_PANEL + 20;
-        this.drivesScrollPane.setViewportView(this.drivesInfoPanel);
-        this.drivesScrollPane.setLocation(0, drivesY);
-        this.drivesScrollPane.setSize(this.drivesInfoPanel.getSize());
-        this.add(this.drivesScrollPane);
+        var drivesScrollPane = new JScrollPane();
+        drivesScrollPane.setViewportView(this.drivesInfoPanel);
+        drivesScrollPane.setLocation(0, drivesY);
+        drivesScrollPane.setSize(this.drivesInfoPanel.getSize());
+        this.add(drivesScrollPane);
     }
 
     /**

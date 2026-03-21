@@ -35,10 +35,7 @@ public class RemoteFrame extends JFrame implements Runnable {
 
     private JLabel screenLabel;
     private JMenuBar menuBar;
-    private JMenu monitorMenu;
     private HardwareDialog hardwareDialog;
-
-    private Dimension displaySize;
 
     /**
      * Ratio of server screen width to displayed label width.
@@ -124,10 +121,10 @@ public class RemoteFrame extends JFrame implements Runnable {
     }
 
     private void initComponents() throws RemoteException {
-        this.screenLabel     = new JLabel();
-        this.menuBar         = new JMenuBar();
-        this.monitorMenu     = new JMenu();
-        this.hardwareDialog  = new HardwareDialog(this, this.remoteDesktop);
+        this.screenLabel    = new JLabel();
+        this.menuBar        = new JMenuBar();
+        var monitorMenu     = new JMenu();
+        this.hardwareDialog = new HardwareDialog(this, this.remoteDesktop);
 
         this.setMinimumSize(this.hardwareDialog.getPreferredSize());
 
@@ -180,9 +177,9 @@ public class RemoteFrame extends JFrame implements Runnable {
         this.menuBar.setPreferredSize(new Dimension(0, 25));
         this.setJMenuBar(this.menuBar);
 
-        this.monitorMenu.setText("Show monitor");
+        monitorMenu.setText("Show monitor");
         this.menuBar.setFont(new Font("segoe ui", Font.PLAIN, 14));
-        this.monitorMenu.addMouseListener(new MouseAdapter() {
+        monitorMenu.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) hardwareDialog.setVisible(true);
@@ -191,13 +188,13 @@ public class RemoteFrame extends JFrame implements Runnable {
             @Override
             public void mouseEntered(MouseEvent e) {
                 monitorMenu.setFont(new Font("segoe ui", Font.BOLD, 16));
-                setCursor(new Cursor(Cursor.HAND_CURSOR));
+                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 monitorMenu.setFont(new Font("segoe ui", Font.PLAIN, 14));
-                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                setCursor(Cursor.getDefaultCursor());
             }
         });
         this.menuBar.add(this.monitorMenu);
@@ -226,7 +223,6 @@ public class RemoteFrame extends JFrame implements Runnable {
             int vGap = (availHeight - screenshot.getHeight()) / 2;
             this.scaleX = 1f;
             this.scaleY = 1f;
-            this.displaySize = new Dimension(screenshot.getWidth(), screenshot.getHeight());
             this.screenLabel.setBounds(hGap, vGap, screenshot.getWidth(), screenshot.getHeight());
         } else {
             // Server screen is larger — scale to fit, preserving aspect ratio.
@@ -235,7 +231,6 @@ public class RemoteFrame extends JFrame implements Runnable {
             int hGap         = (availWidth - scaledWidth) / 2;
             this.scaleX = (float) screenshot.getWidth()  / scaledWidth;
             this.scaleY = (float) screenshot.getHeight() / availHeight;
-            this.displaySize = new Dimension(scaledWidth, availHeight);
             this.screenLabel.setBounds(hGap, 0, scaledWidth, availHeight);
         }
     }

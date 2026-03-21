@@ -33,7 +33,6 @@ public class MainChatPanel extends JPanel {
     private static final String FONT_FAMILY = "segoe ui";
 
     private JLabel connectionsLabel;
-    private JMenuBar menuBar;
     private JPopupMenu popupMenu;
 
     private final List<ChatPanel> chatPanels;
@@ -59,7 +58,7 @@ public class MainChatPanel extends JPanel {
     }
 
     private void initComponents() {
-        this.menuBar          = new JMenuBar();
+        var menuBar           = new JMenuBar();
         this.connectionsLabel = new JLabel();
         this.popupMenu        = new JPopupMenu();
 
@@ -84,9 +83,9 @@ public class MainChatPanel extends JPanel {
             }
         });
 
-        this.menuBar.add(this.connectionsLabel);
-        this.menuBar.setBounds(0, 0, MainFrame.WIDTH_FRAME, 20);
-        this.menuBar.setLayout(new GridBagLayout());
+        menuBar.add(this.connectionsLabel);
+        menuBar.setBounds(0, 0, MainFrame.WIDTH_FRAME, 20);
+        menuBar.setLayout(new GridBagLayout());
         this.add(this.menuBar);
     }
 

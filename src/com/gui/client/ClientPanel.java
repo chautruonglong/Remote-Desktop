@@ -37,7 +37,6 @@ public class ClientPanel extends JPanel {
 
     private CommonPanel mainPanel;
     private CommonLabel connectLabel;
-    private ButtonGroup qualityButtonGroup;
     private JRadioButton lowQualityRadio;
     private JRadioButton highQualityRadio;
     private JLabel loaderLabel;
@@ -63,7 +62,7 @@ public class ClientPanel extends JPanel {
     private void initComponents() {
         this.mainPanel         = new CommonPanel();
         this.connectLabel      = new CommonLabel();
-        this.qualityButtonGroup = new ButtonGroup();
+        var qualityButtonGroup  = new ButtonGroup();
         this.lowQualityRadio   = new JRadioButton();
         this.highQualityRadio  = new JRadioButton();
         this.loaderLabel       = new JLabel();
@@ -119,13 +118,13 @@ public class ClientPanel extends JPanel {
         this.lowQualityRadio.setBounds(60, 290, 100, 30);
         this.lowQualityRadio.setOpaque(false);
         this.lowQualityRadio.setSelected(true);
-        this.qualityButtonGroup.add(this.lowQualityRadio);
+        qualityButtonGroup.add(this.lowQualityRadio);
         this.add(this.lowQualityRadio);
 
         this.highQualityRadio.setText("High quality");
         this.highQualityRadio.setBounds(60, 310, 100, 30);
         this.highQualityRadio.setOpaque(false);
-        this.qualityButtonGroup.add(this.highQualityRadio);
+        qualityButtonGroup.add(this.highQualityRadio);
         this.add(this.highQualityRadio);
 
         // Spinner shown while connecting.
