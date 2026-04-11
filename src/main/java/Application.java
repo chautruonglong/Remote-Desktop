@@ -34,7 +34,7 @@ public class Application {
                 JOptionPane.showMessageDialog(
                     null,
                     "Application failed to start:\n" + e.getMessage(),
-                    "Startup Error",
+                    "Startup Error LONG",
                     JOptionPane.ERROR_MESSAGE
                 );
             }
