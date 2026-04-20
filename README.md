@@ -155,10 +155,10 @@ src/main/java
 
 ## Star History
 
-<a href="https://www.star-history.com/#chautruonglong/Remote-Desktop&Timeline">
+<a href="https://www.star-history.com/?repos=chautruonglong%2FRemote-Desk%2Cchautruonglong%2FRemote-Desktop&type=timeline&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=chautruonglong/Remote-Desktop&type=Timeline&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=chautruonglong/Remote-Desktop&type=Timeline" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=chautruonglong/Remote-Desktop&type=Timeline" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=chautruonglong/Remote-Desk%2Cchautruonglong/Remote-Desktop&type=timeline&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=chautruonglong/Remote-Desk%2Cchautruonglong/Remote-Desktop&type=timeline&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=chautruonglong/Remote-Desk%2Cchautruonglong/Remote-Desktop&type=timeline&legend=top-left" />
  </picture>
 </a>
