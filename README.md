@@ -152,3 +152,13 @@ src/main/java
 - A true Java 26 build requires a local JDK 26 installation.
 - If you want to package the Windows executable, use the Maven package phase so the Launch4j
   configuration runs as part of the build.
+
+## Star History
+
+<a href="https://www.star-history.com/#chautruonglong/Remote-Desktop&Timeline">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=chautruonglong/Remote-Desktop&type=Timeline&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=chautruonglong/Remote-Desktop&type=Timeline" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=chautruonglong/Remote-Desktop&type=Timeline" />
+ </picture>
+</a>
