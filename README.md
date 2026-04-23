@@ -162,3 +162,13 @@ src/main/java
    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=chautruonglong/Remote-Desktop&type=timeline&legend=top-left" />
  </picture>
 </a>
+
+## Star Mapper
+
+<a href="https://starmapper.bruniaux.com/chautruonglong/Remote-Desktop">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://starmapper.bruniaux.com/api/map-image/chautruonglong/Remote-Desktop?theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://starmapper.bruniaux.com/api/map-image/chautruonglong/Remote-Desktop?theme=light" />
+    <img alt="StarMapper" src="https://starmapper.bruniaux.com/api/map-image/chautruonglong/Remote-Desktop" />
+  </picture>
+</a>
